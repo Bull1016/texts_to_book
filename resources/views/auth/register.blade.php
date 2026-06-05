@@ -18,22 +18,22 @@
             @csrf
 
             <div class="mb-4">
-                <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                <label for="name" class="block text-sm font-medium text-gray-700">Name <sup class="text-red-500">*</sup></label>
                 <input type="text" name="name" id="name" value="{{ old('name') }}" required class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
             </div>
 
             <div class="mb-4">
-                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email <sup class="text-red-500">*</sup></label>
                 <input type="email" name="email" id="email" value="{{ old('email') }}" required class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
             </div>
 
             <div class="mb-4">
-                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <label for="password" class="block text-sm font-medium text-gray-700">Password <sup class="text-red-500">*</sup></label>
                 <input type="password" name="password" id="password" required class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
             </div>
 
             <div class="mb-6">
-                <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirm Password <sup class="text-red-500">*</sup></label>
                 <input type="password" name="password_confirmation" id="password_confirmation" required class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
             </div>
 
