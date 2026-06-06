@@ -75,6 +75,32 @@ class ReportController extends Controller
         return Storage::download($path, "report-{$report->id}.pdf");
     }
 
+    public function retry(Report $report): RedirectResponse
+    {
+        // Only allow retrying failed reports
+        if ($report->status !== 'failed') {
+            return redirect()->route('reports.show', $report);
+        }
+
+        // Reset the report state
+        $report->update([
+            'status'        => 'pending',
+            'progress'      => 0,
+            'error_message' => null,
+        ]);
+
+        // Remove any previously generated sections
+        $report->sections()->each(function ($section) {
+            $section->images()->delete();
+            $section->delete();
+        });
+
+        // Re-trigger generation on the same report
+        $this->reportService->generateReport($report);
+
+        return redirect()->route('reports.show', $report);
+    }
+
     public function destroy(Report $report): RedirectResponse
     {
         // $this->authorize('delete', $report);

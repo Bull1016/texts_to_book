@@ -10,6 +10,7 @@ Route::get('/', function () {
 Route::middleware(['auth'])->group(function () {
     Route::resource('reports', ReportController::class);
     Route::get('reports/{report}/download', [ReportController::class, 'download'])->name('reports.download');
+    Route::post('reports/{report}/retry', [ReportController::class, 'retry'])->name('reports.retry');
 
     Route::get('/dashboard', function () {
         return view('dashboard');

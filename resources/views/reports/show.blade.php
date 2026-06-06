@@ -29,7 +29,10 @@
                 <p class="text-red-800">{{ $report->error_message }}</p>
                 <div class="mt-4 space-x-4">
                     <a href="{{ route('reports.destroy', $report) }}" class="inline-block bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Delete Report</a>
-                    <a href="{{ route('reports.create') }}" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Try Again</a>
+                    <form method="POST" action="{{ route('reports.retry', $report) }}" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Try Again</button>
+                    </form>
                 </div>
             </div>
         @else
