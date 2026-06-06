@@ -27,16 +27,23 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        try {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
 
-        event(new Registered($user));
+            event(new Registered($user));
 
-        Auth::login($user);
+            Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+            return redirect(route('dashboard', absolute: false))
+                ->with('success', 'Votre compte a été créé avec succès. Bienvenue !');
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors de la création de compte : ' . $e->getMessage());
+            return back()->with('error', 'Une erreur est survenue lors de la création de votre compte. Veuillez réessayer.')
+                ->withInput();
+        }
     }
 }
