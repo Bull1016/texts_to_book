@@ -13,9 +13,9 @@ class AIService
 
     public function __construct()
     {
-        $this->apiKey = config('ai.drivers.openai.api_key');
-        $this->model = config('ai.drivers.openai.model');
-        $this->baseUrl = config('ai.drivers.openai.base_url');
+        $this->apiKey = config('ai.api_key');
+        $this->model = config('ai.model');
+        $this->baseUrl = config('ai.base_url');
     }
 
     public function generateOutline(string $topic): array
@@ -23,22 +23,32 @@ class AIService
         $prompt = str_replace('{topic}', $topic, config('ai.prompts.outline'));
 
         try {
-            $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->apiKey}",
-                'Content-Type' => 'application/json',
-            ])->post("{$this->baseUrl}/chat/completions", [
-                'model' => $this->model,
-                'messages' => [
-                    ['role' => 'system', 'content' => 'You are a professional book writer creating detailed outlines.'],
-                    ['role' => 'user', 'content' => $prompt],
+            $response = Http::post("{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}", [
+                'contents' => [
+                    [
+                        'role' => 'user',
+                        'parts' => [
+                            ['text' => "You are a professional book writer creating detailed outlines.\n\n" . $prompt]
+                        ],
+                    ],
                 ],
-                'temperature' => 0.7,
-                'max_tokens' => 2000,
+                'generationConfig' => [
+                    'temperature' => 0.7,
+                    'maxOutputTokens' => 2000,
+                    'responseMimeType' => 'application/json',
+                ],
             ])->throw();
 
-            $content = $response->json('choices.0.message.content');
+            $content = $response->json('candidates.0.content.parts.0.text');
 
-            // Try to parse JSON from the response
+            if ($content) {
+                $parsed = json_decode($content, true);
+                if ($parsed && isset($parsed['chapters'])) {
+                    return $parsed['chapters'];
+                }
+            }
+
+            // Fallback: Try to parse JSON from the response if something went wrong with the JSON mode
             $jsonMatch = preg_match('/\{.*\}/s', $content, $matches);
             if ($jsonMatch) {
                 $parsed = json_decode($matches[0], true);
@@ -47,7 +57,6 @@ class AIService
                 }
             }
 
-            // Fallback: create basic structure from content
             return [
                 [
                     'title' => 'Chapter 1: Introduction',
@@ -55,7 +64,10 @@ class AIService
                 ],
             ];
         } catch (\Exception $e) {
-            Log::error('AI outline generation failed', ['error' => $e->getMessage()]);
+            Log::error('AI outline generation failed', [
+                'error' => $e->getMessage(),
+                'response' => isset($response) ? $response->body() : 'No response',
+            ]);
             throw $e;
         }
     }
@@ -65,22 +77,27 @@ class AIService
         $prompt = str_replace('{title}', $title, config('ai.prompts.content'));
 
         try {
-            $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->apiKey}",
-                'Content-Type' => 'application/json',
-            ])->post("{$this->baseUrl}/chat/completions", [
-                'model' => $this->model,
-                'messages' => [
-                    ['role' => 'system', 'content' => 'You are a professional book writer. Write engaging and informative content.'],
-                    ['role' => 'user', 'content' => $prompt],
+            $response = Http::post("{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}", [
+                'contents' => [
+                    [
+                        'role' => 'user',
+                        'parts' => [
+                            ['text' => "You are a professional book writer. Write engaging and informative content.\n\n" . $prompt]
+                        ],
+                    ],
                 ],
-                'temperature' => 0.7,
-                'max_tokens' => 1500,
+                'generationConfig' => [
+                    'temperature' => 0.7,
+                    'maxOutputTokens' => 1500,
+                ],
             ])->throw();
 
-            return $response->json('choices.0.message.content');
+            return $response->json('candidates.0.content.parts.0.text');
         } catch (\Exception $e) {
-            Log::error('AI content generation failed', ['error' => $e->getMessage()]);
+            Log::error('AI content generation failed', [
+                'error' => $e->getMessage(),
+                'response' => isset($response) ? $response->body() : 'No response',
+            ]);
             throw $e;
         }
     }

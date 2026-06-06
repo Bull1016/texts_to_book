@@ -80,7 +80,7 @@ User Input (sujet/prompt)
 - Métadonnées utilisateurs
 
 #### **Couche Externe** (APIs)
-- OpenAI / OpenRouter (texte)
+- Google Gemini (texte)
 - DALL-E / Stable Diffusion (images)
 - Services de stockage
 
@@ -100,7 +100,7 @@ User Input (sujet/prompt)
 - **Icons** : FontAwesome
 
 ### IA & Media
-- **LLM** : OpenAI / OpenRouter
+- **LLM** : Google Gemini
 - **Images** : DALL-E / Stable Diffusion / Unsplash API
 - **Export** : DomPDF / Snappy
 
@@ -215,12 +215,9 @@ npm run dev
 
 ## Développement
 
-### Ajouter une nouvelle API IA
+### IA
 
-1. Créer driver dans `app/Services/AI/Drivers/`
-2. Implémenter interface `AIDriverInterface`
-3. Enregistrer dans `config/ai.php`
-4. Utiliser via `AIService`
+Le système utilise actuellement l'API Google Gemini (via Google AI Studio). La configuration se trouve dans `config/ai.php` et le service principal est `app/Services/AIService.php`.
 
 ### Ajouter une source d’images
 

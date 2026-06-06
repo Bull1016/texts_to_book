@@ -18,7 +18,7 @@ cp .env.example .env
 
 Edit `.env` with your database and API credentials:
 - `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
-- `OPENAI_API_KEY` - Get from https://platform.openai.com/api-keys
+- `GEMINI_API_KEY` - Get from https://aistudio.google.com/app/apikey
 - `UNSPLASH_API_KEY` - Get from https://unsplash.com/oauth/applications
 
 ### 2. Install Dependencies
@@ -55,10 +55,10 @@ Visit `http://localhost:8000` and register an account.
 
 ### API Keys Required
 
-1. **OpenAI API Key** (for text generation)
-   - Sign up at https://platform.openai.com
+1. **Gemini API Key** (for text generation)
+   - Sign up at https://aistudio.google.com/
    - Create API key
-   - Set in `.env`: `OPENAI_API_KEY=sk-...`
+   - Set in `.env`: `GEMINI_API_KEY=...`
 
 2. **Unsplash API Key** (for images)
    - Register at https://unsplash.com/oauth/applications
@@ -79,7 +79,7 @@ DB_DATABASE=/absolute/path/to/database.sqlite
 
 ✅ User Authentication (Laravel Breeze)
 ✅ Report Creation & Management
-✅ AI-powered Outline Generation (OpenAI)
+✅ AI-powered Outline Generation (Gemini)
 ✅ Content Generation per Section
 ✅ Image Fetching (Unsplash API)
 ✅ PDF Export (DomPDF)
@@ -110,7 +110,7 @@ texts_to_book/
 
 1. User registers & logs in
 2. Creates new report with topic
-3. System generates outline (OpenAI)
+3. System generates outline (Gemini)
 4. Content is generated for each section
 5. Images are fetched (Unsplash)
 6. PDF is created and available for download
@@ -142,7 +142,7 @@ npm run dev
 
 **Image not loading**: Check UNSPLASH_API_KEY
 
-**Content generation slow**: Normal - OpenAI API takes ~30 seconds per report
+**Content generation slow**: Normal - AI API takes ~30 seconds per report
 
 ## Next Steps (v1.1+)
 

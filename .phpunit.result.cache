@@ -1,0 +1,1 @@
+{"version":2,"defects":[],"times":{"Tests\\Unit\\AIServiceTest::test_generate_outline_calls_gemini_correctly":0.031,"Tests\\Unit\\AIServiceTest::test_generate_content_calls_gemini_correctly":0.001}}
