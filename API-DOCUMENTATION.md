@@ -43,10 +43,10 @@ ReportService::generateReport($report)
 ├─ Progress: 0 → 100%
 └─ Events:
     ├─ AIService::generateOutline()
-    │  └─ OpenAI API call (~15 sec)
+    │  └─ Gemini API call (~15 sec)
     ├─ For each chapter in outline:
     │  ├─ AIService::generateContent()
-    │  │  └─ OpenAI API call (~10 sec per section)
+    │  │  └─ Gemini API call (~10 sec per section)
     │  └─ ImageService::fetchImage()
     │     └─ Unsplash API call (~5 sec per image)
     └─ ExportService::generatePDF()
@@ -117,13 +117,13 @@ GET /reports/{id}/download
 
 ## External API Integrations
 
-### OpenAI (GPT-4)
+### Google Gemini
 ```
-POST https://api.openai.com/v1/chat/completions
-├─ Model: gpt-4o-mini
+POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+├─ Model: gemini-2.5-flash
 ├─ Temperature: 0.7
 ├─ Max tokens: 2000 (outline) / 1500 (content)
-└─ Cost: ~$0.001 per request
+└─ Response format: JSON (for outline) / Text (for content)
 ```
 
 ### Unsplash
@@ -138,7 +138,7 @@ GET https://api.unsplash.com/search/photos
 ## Error Handling
 
 ### API Errors
-- OpenAI unavailable → Report status: failed
+- Gemini unavailable → Report status: failed
 - Unsplash error → Use placeholder or skip image
 - Database error → Return 500 with message
 

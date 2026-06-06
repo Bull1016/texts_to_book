@@ -13,7 +13,7 @@ This is the **complete MVP (Minimum Viable Product)** of Texts to Book, built fo
    - Email verification support
 
 2. **Report Generation Workflow**
-   - AI-powered outline generation (OpenAI)
+   - AI-powered outline generation (Gemini)
    - Content generation for each section
    - Automatic image fetching (Unsplash API)
    - Structured data persistence
@@ -98,10 +98,10 @@ npm run dev
 
 ## Required API Keys
 
-1. **OpenAI** - For text generation
-   - Sign up: https://platform.openai.com
+1. **Gemini** - For text generation
+   - Sign up: https://aistudio.google.com/
    - Create API key
-   - Cost: ~$0.05-0.10 per report
+   - Cost: Free/Low cost depending on model
 
 2. **Unsplash** - For images
    - Sign up: https://unsplash.com/oauth/applications
@@ -115,7 +115,7 @@ npm run dev
 - **Build**: Vite
 - **Database**: PostgreSQL (or MySQL)
 - **Caching**: Laravel Cache (file-based by default)
-- **AI Integration**: OpenAI GPT-4
+- **AI Integration**: Google Gemini
 - **Image API**: Unsplash
 - **PDF**: DomPDF
 
