@@ -34,12 +34,14 @@ class ReportController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'subject' => 'required|string|min:10',
+            'language' => 'required|string|in:fr,en,es,de',
         ]);
 
         $report = Report::create([
             'user_id' => auth()->id(),
             'title' => $validated['title'],
             'subject' => $validated['subject'],
+            'language' => $validated['language'],
             'status' => 'pending',
         ]);
 
@@ -55,7 +57,7 @@ class ReportController extends Controller
 
         return view('reports.show', [
             'report' => $report,
-            'sections' => $report->sections()->with('images')->get(),
+            'sections' => $report->sections()->whereNull('parent_id')->with(['images', 'children.images'])->get(),
         ]);
     }
 
@@ -63,14 +65,9 @@ class ReportController extends Controller
     {
         // $this->authorize('view', $report);
 
-        if (!$report->pdf_path) {
-            $this->exportService->generatePDF($report);
-        }
+        $this->exportService->generatePDF($report);
 
         $path = $report->pdf_path;
-        if (!Storage::exists($path)) {
-            $this->exportService->generatePDF($report);
-        }
 
         return Storage::download($path, "report-{$report->id}.pdf");
     }

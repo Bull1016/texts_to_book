@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Report extends Model
 {
-    protected $fillable = ['user_id', 'title', 'subject', 'outline', 'status', 'error_message', 'progress', 'pdf_path'];
+    protected $fillable = ['user_id', 'title', 'subject', 'language', 'outline', 'status', 'error_message', 'progress', 'pdf_path'];
 
     protected $casts = [
         'outline' => 'array',

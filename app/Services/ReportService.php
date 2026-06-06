@@ -27,32 +27,50 @@ class ReportService
 
             // Step 1: Generate outline
             Log::info("Generating outline for report {$report->id}");
-            $outline = $this->aiService->generateOutline($report->subject);
+            $outline = $this->aiService->generateOutline($report->subject, $report->language ?? 'fr');
             $report->update([
                 'outline' => $outline,
-                'progress' => 30,
+                'progress' => 20,
             ]);
 
+            $outlineText = collect($outline)->map(function ($c) {
+                $subs = collect($c['subsections'] ?? [])->map(fn($s) => "- " . $s['title'])->implode("\n");
+                return $c['title'] . "\n" . $subs;
+            })->implode("\n\n");
+
+            $totalChapters = count($outline);
+            $totalSubsections = collect($outline)->sum(fn($c) => count($c['subsections'] ?? []));
+            $totalSteps = $totalChapters + $totalSubsections;
+            $currentStep = 0;
+
             // Step 2: Generate content for each section
-            foreach ($outline as $index => $chapter) {
+            foreach ($outline as $chapterIndex => $chapter) {
                 Log::info("Generating content for chapter: {$chapter['title']}");
 
-                $content = $this->aiService->generateContent($chapter['title']);
-
-                $section = ReportSection::create([
+                $chapterSection = ReportSection::create([
                     'report_id' => $report->id,
-                    'title' => $chapter['title'],
-                    'content' => $content,
-                    'order' => $index,
+                    'title'     => $chapter['title'],
+                    'content'   => '', // Chapters might just be containers or have intro
+                    'order'     => $chapterIndex,
                 ]);
 
-                // Step 3: Fetch images
+                // Generate intro for chapter if needed, or just proceed to sub-sections
+                $chapterContent = $this->aiService->generateContent(
+                    $report->subject,
+                    $outlineText,
+                    $chapter['title'],
+                    $chapter['title'],
+                    $chapter['description'] ?? '',
+                    $report->language ?? 'fr'
+                );
+                $chapterSection->update(['content' => $chapterContent]);
+
+                // Step 3: Fetch images for chapter
                 $imagePrompt = $this->imageService->generateImagePrompt($chapter['title']);
                 $imageUrl = $this->imageService->fetchImage($imagePrompt);
-
                 if ($imageUrl) {
                     ReportImage::create([
-                        'report_section_id' => $section->id,
+                        'report_section_id' => $chapterSection->id,
                         'prompt' => $imagePrompt,
                         'image_url' => $imageUrl,
                         'source' => 'unsplash',
@@ -60,8 +78,37 @@ class ReportService
                     ]);
                 }
 
-                $progress = 30 + (($index + 1) / count($outline)) * 60;
+                $currentStep++;
+                $progress = 20 + ($currentStep / $totalSteps) * 75;
                 $report->update(['progress' => (int)$progress]);
+
+                // Generate sub-sections
+                if (isset($chapter['subsections']) && is_array($chapter['subsections'])) {
+                    foreach ($chapter['subsections'] as $subIndex => $sub) {
+                        Log::info("Generating content for sub-section: {$sub['title']}");
+
+                        $subContent = $this->aiService->generateContent(
+                            $report->subject,
+                            $outlineText,
+                            $chapter['title'],
+                            $sub['title'],
+                            $sub['description'] ?? '',
+                            $report->language ?? 'fr'
+                        );
+
+                        $subSection = ReportSection::create([
+                            'report_id' => $report->id,
+                            'parent_id' => $chapterSection->id,
+                            'title'     => $sub['title'],
+                            'content'   => $subContent,
+                            'order'     => $subIndex,
+                        ]);
+
+                        $currentStep++;
+                        $progress = 20 + ($currentStep / $totalSteps) * 75;
+                        $report->update(['progress' => (int)$progress]);
+                    }
+                }
             }
 
             $report->update([
