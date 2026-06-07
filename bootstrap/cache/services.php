@@ -32,7 +32,10 @@
     28 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
     29 => 'Termwind\\Laravel\\TermwindServiceProvider',
     30 => 'Spatie\\LaravelIgnition\\IgnitionServiceProvider',
-    31 => 'Livewire\\LivewireServiceProvider',
+    31 => 'Yajra\\DataTables\\DataTablesServiceProvider',
+    32 => 'Livewire\\LivewireServiceProvider',
+    33 => 'Livewire\\Volt\\VoltServiceProvider',
+    34 => 'App\\Providers\\VoltServiceProvider',
   ),
   'eager' => 
   array (
@@ -53,7 +56,10 @@
     14 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
     15 => 'Termwind\\Laravel\\TermwindServiceProvider',
     16 => 'Spatie\\LaravelIgnition\\IgnitionServiceProvider',
-    17 => 'Livewire\\LivewireServiceProvider',
+    17 => 'Yajra\\DataTables\\DataTablesServiceProvider',
+    18 => 'Livewire\\LivewireServiceProvider',
+    19 => 'Livewire\\Volt\\VoltServiceProvider',
+    20 => 'App\\Providers\\VoltServiceProvider',
   ),
   'deferred' => 
   array (

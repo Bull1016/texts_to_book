@@ -5,12 +5,13 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^2.1",
+        "guzzlehttp/guzzle": "^7.5",
+        "laravel/breeze": "^2.0",
         "laravel/framework": "^11.0",
         "livewire/livewire": "^3.0",
         "livewire/volt": "^1.0",
-        "laravel/breeze": "^2.0",
-        "barryvdh/laravel-dompdf": "^2.1",
-        "guzzlehttp/guzzle": "^7.5"
+        "yajra/laravel-datatables-oracle": "^11.0"
     },
     "require-dev": {
         "laravel/pint": "^1.13",
