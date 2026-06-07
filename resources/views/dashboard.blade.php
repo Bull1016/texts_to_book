@@ -84,6 +84,8 @@ $(document).ready(function() {
     $('#reportsTable').DataTable({
         processing: true,
         serverSide: true,
+        responsive: true,
+        serverSide: true,
         ajax: "{{ route('dashboard') }}",
         columns: [
             {data: 'title', name: 'title'},
