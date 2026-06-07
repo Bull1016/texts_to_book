@@ -5,13 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Report;
 use App\Services\ReportService;
 use App\Services\ExportService;
+use App\Jobs\GenerateReportJob;
+use App\Http\Requests\StoreReportRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ReportController extends Controller
 {
+    use AuthorizesRequests;
+
     public function __construct(
         private ReportService $reportService,
         private ExportService $exportService
@@ -29,13 +34,9 @@ class ReportController extends Controller
         return view('reports.create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreReportRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'subject' => 'required|string|min:10',
-            'language' => 'required|string|in:fr,en,es,de',
-        ]);
+        $validated = $request->validated();
 
         $report = Report::create([
             'user_id' => auth()->id(),
@@ -45,26 +46,20 @@ class ReportController extends Controller
             'status' => 'pending',
         ]);
 
-        // Dispatch generation (synchronously for MVP)
         try {
-            $this->reportService->generateReport($report);
-
-            if ($report->fresh()->status === 'failed') {
-                return redirect()->route('reports.show', $report)
-                    ->with('error', 'La génération du rapport a échoué : ' . $report->fresh()->error_message);
-            }
+            GenerateReportJob::dispatch($report);
 
             return redirect()->route('reports.show', $report)
-                ->with('success', 'Rapport généré avec succès !');
+                ->with('success', __('Report generation started in the background.'));
         } catch (\Exception $e) {
             return redirect()->route('reports.show', $report)
-                ->with('error', 'Une erreur inattendue est survenue : ' . $e->getMessage());
+                ->with('error', __('An error occurred while queueing the report: ') . $e->getMessage());
         }
     }
 
     public function show(Report $report): View
     {
-        // $this->authorize('view', $report);
+        $this->authorize('view', $report);
 
         return view('reports.show', [
             'report' => $report,
@@ -74,7 +69,11 @@ class ReportController extends Controller
 
     public function download(Report $report)
     {
-        // $this->authorize('view', $report);
+        $this->authorize('view', $report);
+
+        if ($report->status !== 'completed') {
+            return redirect()->route('reports.show', $report)->with('error', __('The report is not finished yet.'));
+        }
 
         $this->exportService->generatePDF($report);
 
@@ -85,6 +84,8 @@ class ReportController extends Controller
 
     public function retry(Report $report): RedirectResponse
     {
+        $this->authorize('update', $report);
+
         // Only allow retrying failed reports
         if ($report->status !== 'failed') {
             return redirect()->route('reports.show', $report);
@@ -95,6 +96,7 @@ class ReportController extends Controller
             'status'        => 'pending',
             'progress'      => 0,
             'error_message' => null,
+            'current_step'  => __('Restarting generation...'),
         ]);
 
         // Remove any previously generated sections
@@ -103,26 +105,20 @@ class ReportController extends Controller
             $section->delete();
         });
 
-        // Re-trigger generation on the same report
         try {
-            $this->reportService->generateReport($report);
-
-            if ($report->fresh()->status === 'failed') {
-                return redirect()->route('reports.show', $report)
-                    ->with('error', 'La re-génération a échoué : ' . $report->fresh()->error_message);
-            }
+            GenerateReportJob::dispatch($report);
 
             return redirect()->route('reports.show', $report)
-                ->with('success', 'Rapport re-généré avec succès !');
+                ->with('success', __('Re-generation has started.'));
         } catch (\Exception $e) {
             return redirect()->route('reports.show', $report)
-                ->with('error', 'Erreur inattendue lors de la re-génération : ' . $e->getMessage());
+                ->with('error', __('Unexpected error during re-generation: ') . $e->getMessage());
         }
     }
 
     public function destroy(Report $report): RedirectResponse
     {
-        // $this->authorize('delete', $report);
+        $this->authorize('delete', $report);
 
         if ($report->pdf_path && Storage::exists($report->pdf_path)) {
             Storage::delete($report->pdf_path);
@@ -130,6 +126,6 @@ class ReportController extends Controller
 
         $report->delete();
 
-        return redirect()->route('reports.index')->with('success', 'Report deleted successfully');
+        return redirect()->route('reports.index')->with('success', __('Report deleted successfully'));
     }
 }

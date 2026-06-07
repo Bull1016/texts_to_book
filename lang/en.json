@@ -65,5 +65,18 @@
     "Download as PDF": "Download as PDF",
     "Preparing to generate your report...": "Preparing to generate your report...",
     "e.g., The Future of AI": "e.g., The Future of AI",
-    "Describe the topic you want to create a report about. Be as detailed as possible...": "Describe the topic you want to create a report about. Be as detailed as possible..."
+    "Describe the topic you want to create a report about. Be as detailed as possible...": "Describe the topic you want to create a report about. Be as detailed as possible...",
+    "Generating cover image...": "Generating cover image...",
+    "Generating report outline...": "Generating report outline...",
+    "Generating chapter: :title...": "Generating chapter: :title...",
+    "Generating sub-section: :title...": "Generating sub-section: :title...",
+    "Generation complete!": "Generation complete!",
+    "Error during generation": "Error during generation",
+    "Report generation started in the background.": "Report generation started in the background.",
+    "An error occurred while queueing the report: ": "An error occurred while queueing the report: ",
+    "The report is not finished yet.": "The report is not finished yet.",
+    "Restarting generation...": "Restarting generation...",
+    "Re-generation has started.": "Re-generation has started.",
+    "Unexpected error during re-generation: ": "Unexpected error during re-generation: ",
+    "Report deleted successfully": "Report deleted successfully"
 }
