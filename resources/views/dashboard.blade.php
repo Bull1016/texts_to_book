@@ -1,80 +1,140 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="py-12">
+<div class="py-6">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-6">Welcome, {{ auth()->user()->name }}! 👋</h1>
-
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-2">Quick Stats</h3>
-                <p class="text-3xl font-bold text-blue-600">{{ auth()->user()->reports()->count() }}</p>
-                <p class="text-gray-600">Reports Created</p>
+            <!-- Chart Box -->
+            <div class="md:col-span-1 bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <h3 class="text-lg font-semibold mb-4 text-gray-700">{{ __('Reports Overview') }}</h3>
+                <div class="h-64">
+                    <canvas id="statusChart"></canvas>
+                </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-2">Recently Completed</h3>
-                <p class="text-3xl font-bold text-green-600">{{ auth()->user()->reports()->where('status', 'completed')->count() }}</p>
-                <p class="text-gray-600">Finished Reports</p>
-            </div>
-
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-2">Get Started</h3>
-                <a href="{{ route('reports.create') }}" class="block w-full bg-blue-600 text-white text-center py-2 rounded hover:bg-blue-700">
-                    Create New Report
-                </a>
+            <!-- Stats or Welcome (Optional, but good for layout) -->
+            <div class="md:col-span-2 bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 flex flex-col justify-center text-center border-l-4 border-blue-500">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Hello, {{ auth()->user()->name }}!</h2>
+                <p class="text-gray-600">{{ __('Transform your ideas into beautiful books using our AI-powered platform.') }}</p>
+                <div class="mt-6">
+                    <a href="{{ route('reports.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        <i class="fa-solid fa-plus mr-2"></i> {{ __('New Report') }}
+                    </a>
+                </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4">Your Recent Reports</h2>
-
-            @if(auth()->user()->reports()->exists())
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead class="border-b">
-                            <tr>
-                                <th class="text-left py-2 px-4">Title</th>
-                                <th class="text-left py-2 px-4">Status</th>
-                                <th class="text-left py-2 px-4">Created</th>
-                                <th class="text-right py-2 px-4">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach(auth()->user()->reports()->latest()->limit(5)->get() as $report)
-                                <tr class="border-b hover:bg-gray-50">
-                                    <td class="py-2 px-4">{{ $report->title }}</td>
-                                    <td class="py-2 px-4">
-                                        <span class="px-3 py-1 rounded text-sm
-                                            @if($report->status === 'completed') bg-green-100 text-green-800
-                                            @elseif($report->status === 'generating') bg-yellow-100 text-yellow-800
-                                            @elseif($report->status === 'failed') bg-red-100 text-red-800
-                                            @else bg-gray-100 text-gray-800
-                                            @endif">
-                                            {{ ucfirst($report->status) }}
-                                        </span>
-                                    </td>
-                                    <td class="py-2 px-4">{{ $report->created_at->format('M d, Y') }}</td>
-                                    <td class="py-2 px-4 text-right">
-                                        <a href="{{ route('reports.show', $report) }}" class="text-blue-600 hover:text-blue-700 mr-4">View</a>
-                                        @if($report->status === 'completed')
-                                            <a href="{{ route('reports.download', $report) }}" class="text-green-600 hover:text-green-700 mr-4">Download PDF</a>
-                                        @endif
-                                        <form method="POST" action="{{ route('reports.destroy', $report) }}" style="display:inline;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-700" onclick="return confirm('Are you sure?')">Delete</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <p class="text-gray-600 text-center py-8">No reports yet. <a href="{{ route('reports.create') }}" class="text-blue-600 hover:text-blue-700">Create one now!</a></p>
-            @endif
+        <!-- DataTables Section -->
+        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+            <h3 class="text-lg font-semibold mb-6 text-gray-700">{{ __('Recent Reports') }}</h3>
+            <div class="overflow-x-auto">
+                <table id="reportsTable" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Title') }}</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Status') }}</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Created At') }}</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Actions') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <!-- Loaded via DataTables -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+$(document).ready(function() {
+    // Polar Area Chart
+    const ctx = document.getElementById('statusChart').getContext('2d');
+    const statusData = @json($statusStats);
+
+    const labels = Object.keys(statusData).map(label => label.charAt(0).toUpperCase() + label.slice(1));
+    const values = Object.values(statusData);
+
+    new Chart(ctx, {
+        type: 'polarArea',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: [
+                    'rgba(34, 197, 94, 0.6)',  // Green (completed)
+                    'rgba(234, 179, 8, 0.6)',   // Yellow (generating)
+                    'rgba(239, 68, 68, 0.6)',   // Red (failed)
+                    'rgba(107, 114, 128, 0.6)'  // Gray (pending)
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+
+    // DataTables
+    $('#reportsTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('dashboard') }}",
+        columns: [
+            {data: 'title', name: 'title'},
+            {data: 'status', name: 'status'},
+            {data: 'created_at', name: 'created_at'},
+            {data: 'action', name: 'action', orderable: false, searchable: false, class: 'text-right'},
+        ],
+        language: {
+            search: "{{ __('Search') }}:",
+            lengthMenu: "_MENU_",
+            info: "",
+            paginate: {
+                previous: "<i class='fa-solid fa-chevron-left'></i>",
+                next: "<i class='fa-solid fa-chevron-right'></i>"
+            }
+        },
+        drawCallback: function() {
+            // Re-initialize AlpineJS components after DataTable draw if needed
+            // But since Alpine handles DOM changes well, usually not strictly required if using x-init
+        }
+    });
+});
+</script>
+
+<style>
+/* Custom DataTables Styling */
+.dataTables_wrapper .dataTables_filter {
+    float: right;
+    margin-bottom: 1.5rem;
+}
+.dataTables_wrapper .dataTables_filter input {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    padding: 0.5rem 1rem;
+    margin-left: 0.5rem;
+    outline: none;
+}
+.dataTables_wrapper .dataTables_length select {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    padding: 0.5rem 2rem 0.5rem 1rem;
+    outline: none;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 0.5rem;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #2563eb !important;
+    color: white !important;
+    border: none;
+    border-radius: 0.375rem;
+}
+</style>
 @endsection

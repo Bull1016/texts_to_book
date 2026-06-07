@@ -40,6 +40,8 @@ return [
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
         Livewire\LivewireServiceProvider::class,
+        Livewire\Volt\VoltServiceProvider::class,
+        App\Providers\VoltServiceProvider::class,
     ],
     'aliases' => [
         'App' => Illuminate\Support\Facades\App::class,

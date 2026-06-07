@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Texts to Book')</title>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- AlpineJS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jQuery & DataTables -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gray-50">
@@ -15,12 +25,49 @@
                         <a href="{{ route('dashboard') }}" class="text-xl font-bold text-blue-600">📚 Texts to Book</a>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <a href="{{ route('reports.index') }}" class="text-gray-600 hover:text-gray-900">Reports</a>
-                        <a href="{{ route('reports.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">New Report</a>
-                        <form method="POST" action="{{ route('logout') }}" style="display:inline;">
-                            @csrf
-                            <button type="submit" class="text-gray-600 hover:text-gray-900">Logout</button>
-                        </form>
+                        <a href="{{ route('reports.index') }}" class="text-gray-600 hover:text-gray-900">{{ __('Reports') }}</a>
+                        <a href="{{ route('reports.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                           <i class="fa-solid fa-plus mr-1"></i>{{ __('New Report') }}
+                        </a>
+
+                        <!-- Language Switcher -->
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" class="flex items-center text-gray-600 hover:text-gray-900 focus:outline-none">
+                                <i class="fa-solid fa-earth-americas mr-1"></i>
+                                <span>{{ strtoupper(app()->getLocale()) }}</span>
+                                <i class="fa-solid fa-chevron-down ml-1 text-xs"></i>
+                            </button>
+                            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-50" style="display: none;">
+                                <a href="{{ route('lang.switch', 'en') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                    <span class="mr-2">🇺🇸</span> English
+                                </a>
+                                <a href="{{ route('lang.switch', 'fr') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                    <span class="mr-2">🇫🇷</span> Français
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Profile Dropdown -->
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" class="flex items-center text-gray-600 hover:text-gray-900 focus:outline-none">
+                                <i class="fa-solid fa-user-astronaut text-xl"></i>
+                                <i class="fa-solid fa-chevron-down ml-1 text-xs"></i>
+                            </button>
+                            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-50" style="display: none;">
+                                <div class="px-4 py-2 text-sm text-gray-500 border-b">
+                                    {{ auth()->user()->name }}
+                                </div>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                    <i class="fa-solid fa-user mr-2 text-gray-400"></i> {{ __('Profile') }}
+                                </a>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center">
+                                        <i class="fa-solid fa-rocket mr-2 text-red-400"></i> {{ __('Logout') }}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
