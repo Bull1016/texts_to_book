@@ -83,5 +83,34 @@
             <p>&copy; {{ date('Y') }} Texts to Book. Transform your ideas into beautiful books.</p>
         </div>
     </footer>
+    {{-- SweetAlert2 --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        /**
+         * Affiche une modale de confirmation Swal avant de soumettre un formulaire de suppression.
+         * @param {HTMLElement} form - Le formulaire DELETE à soumettre si confirmé.
+         * @param {string} title    - Titre de la modale (optionnel).
+         * @param {string} text     - Corps du message (optionnel).
+         */
+        function swalDelete(form, title, text) {
+            Swal.fire({
+                title: title || 'Confirmer la suppression',
+                text: text || 'Cette action est irréversible.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Oui, supprimer',
+                cancelButtonText: 'Annuler',
+                reverseButtons: true,
+                focusCancel: true,
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+    </script>
 </body>
 </html>

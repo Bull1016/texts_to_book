@@ -28,10 +28,18 @@
                 <h3 class="font-bold text-red-900 mb-2">Generation Failed</h3>
                 <p class="text-red-800">{{ $report->error_message }}</p>
                 <div class="mt-4 space-x-4">
-                    <a href="{{ route('reports.destroy', $report) }}" class="inline-block bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Delete Report</a>
+                    <form id="delete-failed-form" method="POST" action="{{ route('reports.destroy', $report) }}" style="display:inline;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="button"
+                            onclick="swalDelete(document.getElementById('delete-failed-form'), 'Supprimer ce rapport ?', 'Le rapport &quot;{{ addslashes($report->title) }}&quot; sera définitivement supprimé.')"
+                            class="inline-block bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                            Supprimer le rapport
+                        </button>
+                    </form>
                     <form method="POST" action="{{ route('reports.retry', $report) }}" style="display:inline;">
                         @csrf
-                        <button type="submit" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Try Again</button>
+                        <button type="submit" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Réessayer</button>
                     </form>
                 </div>
             </div>
@@ -41,10 +49,14 @@
                 @if($report->status === 'completed')
                     <a href="{{ route('reports.download', $report) }}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">📥 Download PDF</a>
                 @endif
-                <form method="POST" action="{{ route('reports.destroy', $report) }}" style="display:inline;">
+                <form id="delete-form" method="POST" action="{{ route('reports.destroy', $report) }}" style="display:inline;">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" onclick="return confirm('Are you sure?')">Delete</button>
+                    <button type="button"
+                        onclick="swalDelete(document.getElementById('delete-form'), 'Supprimer ce rapport ?', 'Le rapport &quot;{{ addslashes($report->title) }}&quot; sera définitivement supprimé.')"
+                        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                        Supprimer
+                    </button>
                 </form>
             </div>
 

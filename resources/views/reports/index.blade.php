@@ -42,11 +42,13 @@
                                         Download
                                     </a>
                                 @endif
-                                <form method="POST" action="{{ route('reports.destroy', $report) }}" style="display:inline;">
+                                <form id="delete-report-{{ $report->id }}" method="POST" action="{{ route('reports.destroy', $report) }}" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" onclick="return confirm('Are you sure?')">
-                                        Delete
+                                    <button type="button"
+                                        onclick="swalDelete(document.getElementById('delete-report-{{ $report->id }}'), 'Supprimer ce rapport ?', 'Le rapport &quot;{{ addslashes($report->title) }}&quot; sera définitivement supprimé.')"
+                                        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                                        Supprimer
                                     </button>
                                 </form>
                             </div>
