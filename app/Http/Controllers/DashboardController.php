@@ -18,7 +18,7 @@ class DashboardController extends Controller
                     $viewUrl = route('reports.show', $row->id);
                     $downloadUrl = $row->status === 'completed' ? route('reports.download', $row->id) : '#';
 
-                    $actions = '<div class="relative inline-block text-left">
+                    $actions = '<div class="relative inline-block text-center">
                         <button type="button" onclick="toggleActionMenu(this)" class="action-btn inline-flex items-center justify-center w-8 h-8 rounded-full border border-gray-200 bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-150" title="'.__('Actions').'">
                             <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
                         </button>
@@ -33,14 +33,14 @@ class DashboardController extends Controller
                                     </a>';
                     }
 
-                    $actions .= '<form action="'.route('reports.destroy', $row->id).'" method="POST" class="block" id="delete-form-'.$row->id.'">
-                                    '.csrf_field().'
-                                    '.method_field('DELETE').'
-                                    <button type="button" onclick="swalDelete(document.getElementById(\'delete-form-'.$row->id.'\'))" class="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-100" role="menuitem">
-                                        <i class="fa-solid fa-trash mr-2 text-red-400 w-4"></i> '.__('Delete').'
-                                    </button>
-                                </form>
-                        </div>
+                    // $actions .= '<form action="'.route('reports.destroy', $row->id).'" method="POST" class="block" id="delete-form-'.$row->id.'">
+                    //                 '.csrf_field().'
+                    //                 '.method_field('DELETE').'
+                    //                 <button type="button" onclick="swalDelete(document.getElementById(\'delete-form-'.$row->id.'\'))" class="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-100" role="menuitem">
+                    //                     <i class="fa-solid fa-trash mr-2 text-red-400 w-4"></i> '.__('Delete').'
+                    //                 </button>
+                    //             </form>
+                        '</div>
                     </div>';
                     return $actions;
                 })
