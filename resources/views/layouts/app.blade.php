@@ -27,6 +27,53 @@
         </nav>
     @endif
 
+    {{-- Toast notifications --}}
+    @if(session('success') || session('error') || session('warning') || session('info'))
+        <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3" aria-live="polite">
+            @if(session('success'))
+                <div class="toast flex items-start gap-3 bg-green-600 text-white px-5 py-4 rounded-lg shadow-lg max-w-sm transition-all duration-500 opacity-0" role="alert">
+                    <span class="text-xl leading-none">✅</span>
+                    <p class="text-sm font-medium">{{ session('success') }}</p>
+                    <button onclick="this.parentElement.remove()" class="ml-auto text-white/80 hover:text-white leading-none text-lg">&times;</button>
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="toast flex items-start gap-3 bg-red-600 text-white px-5 py-4 rounded-lg shadow-lg max-w-sm transition-all duration-500 opacity-0" role="alert">
+                    <span class="text-xl leading-none">❌</span>
+                    <p class="text-sm font-medium">{{ session('error') }}</p>
+                    <button onclick="this.parentElement.remove()" class="ml-auto text-white/80 hover:text-white leading-none text-lg">&times;</button>
+                </div>
+            @endif
+            @if(session('warning'))
+                <div class="toast flex items-start gap-3 bg-yellow-500 text-white px-5 py-4 rounded-lg shadow-lg max-w-sm transition-all duration-500 opacity-0" role="alert">
+                    <span class="text-xl leading-none">⚠️</span>
+                    <p class="text-sm font-medium">{{ session('warning') }}</p>
+                    <button onclick="this.parentElement.remove()" class="ml-auto text-white/80 hover:text-white leading-none text-lg">&times;</button>
+                </div>
+            @endif
+            @if(session('info'))
+                <div class="toast flex items-start gap-3 bg-blue-600 text-white px-5 py-4 rounded-lg shadow-lg max-w-sm transition-all duration-500 opacity-0" role="alert">
+                    <span class="text-xl leading-none">ℹ️</span>
+                    <p class="text-sm font-medium">{{ session('info') }}</p>
+                    <button onclick="this.parentElement.remove()" class="ml-auto text-white/80 hover:text-white leading-none text-lg">&times;</button>
+                </div>
+            @endif
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('.toast').forEach(function (toast) {
+                    // Fade in
+                    setTimeout(() => toast.classList.replace('opacity-0', 'opacity-100'), 50);
+                    // Auto-dismiss after 5s
+                    setTimeout(() => {
+                        toast.classList.replace('opacity-100', 'opacity-0');
+                        setTimeout(() => toast.remove(), 500);
+                    }, 5000);
+                });
+            });
+        </script>
+    @endif
+
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         @yield('content')
     </main>

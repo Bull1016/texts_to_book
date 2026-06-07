@@ -46,9 +46,20 @@ class ReportController extends Controller
         ]);
 
         // Dispatch generation (synchronously for MVP)
-        $this->reportService->generateReport($report);
+        try {
+            $this->reportService->generateReport($report);
 
-        return redirect()->route('reports.show', $report);
+            if ($report->fresh()->status === 'failed') {
+                return redirect()->route('reports.show', $report)
+                    ->with('error', 'La génération du rapport a échoué : ' . $report->fresh()->error_message);
+            }
+
+            return redirect()->route('reports.show', $report)
+                ->with('success', 'Rapport généré avec succès !');
+        } catch (\Exception $e) {
+            return redirect()->route('reports.show', $report)
+                ->with('error', 'Une erreur inattendue est survenue : ' . $e->getMessage());
+        }
     }
 
     public function show(Report $report): View
@@ -93,9 +104,20 @@ class ReportController extends Controller
         });
 
         // Re-trigger generation on the same report
-        $this->reportService->generateReport($report);
+        try {
+            $this->reportService->generateReport($report);
 
-        return redirect()->route('reports.show', $report);
+            if ($report->fresh()->status === 'failed') {
+                return redirect()->route('reports.show', $report)
+                    ->with('error', 'La re-génération a échoué : ' . $report->fresh()->error_message);
+            }
+
+            return redirect()->route('reports.show', $report)
+                ->with('success', 'Rapport re-généré avec succès !');
+        } catch (\Exception $e) {
+            return redirect()->route('reports.show', $report)
+                ->with('error', 'Erreur inattendue lors de la re-génération : ' . $e->getMessage());
+        }
     }
 
     public function destroy(Report $report): RedirectResponse
