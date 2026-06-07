@@ -65,5 +65,18 @@
     "Download as PDF": "Télécharger en PDF",
     "Preparing to generate your report...": "Préparation de la génération de votre rapport...",
     "e.g., The Future of AI": "ex. : L'Avenir de l'IA",
-    "Describe the topic you want to create a report about. Be as detailed as possible...": "Décrivez le sujet pour lequel vous souhaitez créer un rapport. Soyez aussi précis que possible..."
+    "Describe the topic you want to create a report about. Be as detailed as possible...": "Décrivez le sujet pour lequel vous souhaitez créer un rapport. Soyez aussi précis que possible...",
+    "Generating cover image...": "Génération de l'image de couverture...",
+    "Generating report outline...": "Génération du plan du rapport...",
+    "Generating chapter: :title...": "Génération du chapitre : :title...",
+    "Generating sub-section: :title...": "Génération de la sous-section : :title...",
+    "Generation complete!": "Génération terminée !",
+    "Error during generation": "Erreur lors de la génération",
+    "Report generation started in the background.": "La génération du rapport a commencé en arrière-plan.",
+    "An error occurred while queueing the report: ": "Une erreur est survenue lors de la mise en file d'attente : ",
+    "The report is not finished yet.": "Le rapport n'est pas encore terminé.",
+    "Restarting generation...": "Redémarrage de la génération...",
+    "Re-generation has started.": "La re-génération a commencé.",
+    "Unexpected error during re-generation: ": "Erreur inattendue lors de la re-génération : ",
+    "Report deleted successfully": "Rapport supprimé avec succès"
 }

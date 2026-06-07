@@ -23,7 +23,24 @@ class ReportService
     public function generateReport(Report $report): void
     {
         try {
-            $report->update(['status' => 'generating', 'progress' => 10]);
+            $report->update([
+                'status' => 'generating',
+                'progress' => 5,
+                'current_step' => __('Generating cover image...')
+            ]);
+
+            // Step 0: Generate cover image
+            Log::info("Generating cover image for report {$report->id}");
+            $coverPrompt = $report->title . ' professional book cover illustration';
+            $coverUrl = $this->imageService->fetchImage($coverPrompt);
+            if ($coverUrl) {
+                $report->update(['cover_image_url' => $coverUrl]);
+            }
+
+            $report->update([
+                'progress' => 10,
+                'current_step' => __('Generating report outline...')
+            ]);
 
             // Step 1: Generate outline
             Log::info("Generating outline for report {$report->id}");
@@ -46,6 +63,10 @@ class ReportService
             // Step 2: Generate content for each section
             foreach ($outline as $chapterIndex => $chapter) {
                 Log::info("Generating content for chapter: {$chapter['title']}");
+
+                $report->update([
+                    'current_step' => __('Generating chapter: :title...', ['title' => $chapter['title']])
+                ]);
 
                 $chapterSection = ReportSection::create([
                     'report_id' => $report->id,
@@ -87,6 +108,10 @@ class ReportService
                     foreach ($chapter['subsections'] as $subIndex => $sub) {
                         Log::info("Generating content for sub-section: {$sub['title']}");
 
+                        $report->update([
+                            'current_step' => __('Generating sub-section: :title...', ['title' => $sub['title']])
+                        ]);
+
                         $subContent = $this->aiService->generateContent(
                             $report->subject,
                             $outlineText,
@@ -114,6 +139,7 @@ class ReportService
             $report->update([
                 'status' => 'completed',
                 'progress' => 100,
+                'current_step' => __('Generation complete!')
             ]);
 
             Log::info("Report {$report->id} generated successfully");
@@ -122,6 +148,7 @@ class ReportService
             $report->update([
                 'status' => 'failed',
                 'error_message' => $e->getMessage(),
+                'current_step' => __('Error during generation')
             ]);
         }
     }

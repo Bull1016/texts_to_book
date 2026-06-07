@@ -1,86 +1,86 @@
 @extends('layouts.app')
 
+@section('title', __('Create New Report') . ' - Texts to Book')
+
 @section('content')
-<div class="py-12">
-    <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white rounded-xl shadow p-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-6">{{ __('Create New Report') }}</h1>
+<div class="py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto">
+        <!-- Header -->
+        <div class="mb-10 text-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-50 text-blue-600 rounded-3xl mb-6 shadow-sm">
+                <i class="fa-solid fa-wand-magic-sparkles text-2xl"></i>
+            </div>
+            <h1 class="text-4xl font-black text-gray-900 mb-4 tracking-tight">{{ __('Create a New Masterpiece') }}</h1>
+            <p class="text-lg text-gray-500 font-medium">{{ __('Provide a title and a subject, and our AI will do the rest.') }}</p>
+        </div>
 
-            @if($errors->any())
-                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-                    @foreach($errors->all() as $error)
-                        <p>{{ $error }}</p>
-                    @endforeach
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('reports.store') }}" class="space-y-6">
+        <!-- Form Card -->
+        <div class="bg-white rounded-[2.5rem] shadow-xl shadow-blue-900/5 border border-gray-100 overflow-hidden">
+            <form action="{{ route('reports.store') }}" method="POST" class="p-8 md:p-12 space-y-8">
                 @csrf
 
-                <div>
-                    <label for="title" class="block text-sm font-medium text-gray-700 mb-2">{{ __('Report Title') }}</label>
+                <!-- Title -->
+                <div class="space-y-2">
+                    <label for="title" class="text-sm font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('Book Title') }}</label>
                     <input type="text" name="title" id="title" value="{{ old('title') }}" required
-                        placeholder="{{ __('e.g., The Future of AI') }}"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
-                    <p class="text-sm text-gray-500 mt-1">{{ __('A memorable title for your report') }}</p>
+                           class="w-full bg-gray-50 border-2 border-transparent focus:border-blue-100 focus:bg-white focus:ring-4 focus:ring-blue-50 rounded-2xl px-6 py-4 text-lg font-bold transition-all placeholder-gray-300"
+                           placeholder="{{ __('e.g., The Future of Artificial Intelligence') }}">
+                    @error('title') <p class="text-red-500 text-xs font-bold mt-1 ml-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div>
-                    <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">{{ __('Report Subject/Topic') }}</label>
-                    <textarea name="subject" id="subject" rows="6" required
-                        placeholder="{{ __('Describe the topic you want to create a report about. Be as detailed as possible...') }}"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">{{ old('subject') }}</textarea>
-                    <p class="text-sm text-gray-500 mt-1">{{ __('The more detail you provide, the better the AI can generate content') }}</p>
+                <!-- Language -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <label class="text-sm font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('Language') }}</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            @foreach(['fr' => '🇫🇷 FR', 'en' => '🇺🇸 EN', 'es' => '🇪🇸 ES', 'de' => '🇩🇪 DE'] as $code => $label)
+                                <label class="cursor-pointer group">
+                                    <input type="radio" name="language" value="{{ $code }}" {{ old('language', 'fr') === $code ? 'checked' : '' }} class="peer hidden">
+                                    <div class="flex items-center justify-center py-3 rounded-2xl border-2 border-gray-100 bg-gray-50 text-sm font-bold text-gray-500 peer-checked:border-blue-600 peer-checked:bg-blue-50 peer-checked:text-blue-700 group-hover:border-gray-200 transition-all">
+                                        {{ $label }}
+                                    </div>
+                                </label>
+                            @endforeach
+                        </div>
+                        @error('language') <p class="text-red-500 text-xs font-bold mt-1 ml-1">{{ $message }}</p> @enderror
+                    </div>
                 </div>
 
-                <div>
-                    <label for="language" class="block text-sm font-medium text-gray-700 mb-2">{{ __('Report Language') }}</label>
-                    <select name="language" id="language" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
-                        <option value="fr" {{ old('language') == 'fr' ? 'selected' : '' }}>🇫🇷 French</option>
-                        <option value="en" {{ old('language', 'en') == 'en' ? 'selected' : '' }}>🇺🇸 English</option>
-                        <option value="es" {{ old('language') == 'es' ? 'selected' : '' }}>🇪🇸 Spanish</option>
-                        <option value="de" {{ old('language') == 'de' ? 'selected' : '' }}>🇩🇪 German</option>
-                    </select>
-                    <p class="text-sm text-gray-500 mt-1">{{ __('The language in which the report will be generated') }}</p>
+                <!-- Subject/Content -->
+                <div class="space-y-2">
+                    <label for="subject" class="text-sm font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('What is it about?') }}</label>
+                    <div class="relative">
+                        <textarea name="subject" id="subject" rows="6" required
+                                  class="w-full bg-gray-50 border-2 border-transparent focus:border-blue-100 focus:bg-white focus:ring-4 focus:ring-blue-50 rounded-[2rem] px-8 py-6 text-base font-medium leading-relaxed transition-all placeholder-gray-300 min-h-[200px]"
+                                  placeholder="{{ __('Describe the subject, key points you want to cover, and the overall tone of the book...') }}">{{ old('subject') }}</textarea>
+                        <div class="absolute bottom-6 right-8 text-[10px] font-black uppercase tracking-widest text-gray-300">
+                            {{ __('Minimum 10 characters') }}
+                        </div>
+                    </div>
+                    @error('subject') <p class="text-red-500 text-xs font-bold mt-1 ml-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h3 class="font-semibold text-blue-900 mb-2">⚡ {{ __('What happens next:') }}</h3>
-                    <ul class="text-sm text-blue-800 space-y-1">
-                        <li>✓ {{ __('AI generates a structured outline') }}</li>
-                        <li>✓ {{ __('Content is written for each section') }}</li>
-                        <li>✓ {{ __('Images are automatically fetched') }}</li>
-                        <li>✓ {{ __('A professional PDF is created') }}</li>
-                    </ul>
-                </div>
-
-                <div class="flex gap-4">
+                <!-- Submit -->
+                <div class="pt-6">
                     <button type="submit"
-                        class="flex-1 inline-flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-semibold text-base hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-all duration-150">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> {{ __('Generate Report') }}
+                            class="w-full bg-blue-600 text-white rounded-[1.5rem] py-5 text-xl font-black shadow-xl shadow-blue-200 hover:bg-blue-700 hover:shadow-2xl hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] transition-all flex items-center justify-center gap-3 group">
+                        <span>{{ __('Generate My Book') }}</span>
+                        <i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
                     </button>
-                    <a href="{{ route('reports.index') }}"
-                        class="flex-1 text-center inline-flex items-center justify-center gap-2 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold text-base hover:bg-gray-300 active:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-150">
-                        <i class="fa-solid fa-xmark"></i> {{ __('Cancel') }}
-                    </a>
+                    <p class="text-center text-gray-400 text-xs font-bold mt-6 flex items-center justify-center gap-2 uppercase tracking-tighter">
+                        <i class="fa-solid fa-shield-halved text-blue-300"></i>
+                        {{ __('Powered by Gemini 1.5 Pro & Unsplash') }}
+                    </p>
                 </div>
             </form>
         </div>
 
-        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white rounded-xl shadow p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-2">🧠 {{ __('Smart Outlines') }}</h3>
-                <p class="text-gray-600">{{ __('Our AI generates logical, well-structured outlines for your topic.') }}</p>
-            </div>
-            <div class="bg-white rounded-xl shadow p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-2">✍️ {{ __('Professional Content') }}</h3>
-                <p class="text-gray-600">{{ __('Each section is filled with engaging, well-researched content.') }}</p>
-            </div>
-            <div class="bg-white rounded-xl shadow p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-2">📖 {{ __('Instant PDFs') }}</h3>
-                <p class="text-gray-600">{{ __('Download your beautifully formatted report as a PDF.') }}</p>
-            </div>
+        <!-- Secondary CTA -->
+        <div class="mt-10 text-center">
+            <a href="{{ route('reports.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fa-solid fa-arrow-left"></i>
+                {{ __('Back to my reports') }}
+            </a>
         </div>
     </div>
 </div>
