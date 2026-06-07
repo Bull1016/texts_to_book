@@ -127,6 +127,10 @@ new class extends Component {
                                class="flex items-center justify-center px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-md transition-colors">
                                 <i class="fa-solid fa-eye mr-2"></i> {{ __('View') }}
                             </a>
+                            <a href="{{ route('reports.destroy', $report) }}"
+                               class="flex items-center justify-center px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-md transition-colors">
+                                <i class="fa-solid fa-trash mr-2"></i> {{ __('Delete') }}
+                            </a>
                             @if($report->status === 'completed')
                                 <a href="{{ route('reports.download', $report) }}"
                                    class="flex items-center justify-center px-3 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 text-sm font-medium rounded-md transition-colors">
