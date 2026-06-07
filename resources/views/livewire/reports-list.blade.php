@@ -73,8 +73,8 @@ new class extends Component {
 
             @if(!empty($search) || !empty($selectedStatuses))
                 <button wire:click="$set('search', ''); $set('selectedStatuses', [])"
-                        class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                    {{ __('Clear all filters') }}
+                        class="text-sm font-medium text-red-600 hover:text-red-800 underline underline-offset-2 transition-colors duration-150">
+                    <i class="fa-solid fa-xmark mr-1"></i>{{ __('Clear all filters') }}
                 </button>
             @endif
         </div>
@@ -124,17 +124,22 @@ new class extends Component {
                         <!-- Actions (Bottom) -->
                         <div class="mt-auto pt-4 border-t border-gray-100 grid grid-cols-2 gap-2">
                             <a href="{{ route('reports.show', $report) }}"
-                               class="flex items-center justify-center px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-md transition-colors">
-                                <i class="fa-solid fa-eye mr-2"></i> {{ __('View') }}
+                               class="flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-700 text-white text-sm font-medium rounded-lg hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-1 transition-all duration-150">
+                                <i class="fa-solid fa-eye"></i> {{ __('View') }}
                             </a>
-                            <a href="{{ route('reports.destroy', $report) }}"
-                               class="flex items-center justify-center px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-md transition-colors">
-                                <i class="fa-solid fa-trash mr-2"></i> {{ __('Delete') }}
-                            </a>
+                            <form method="POST" action="{{ route('reports.destroy', $report) }}" class="contents" id="list-delete-{{ $report->id }}">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button"
+                                    onclick="swalDelete(document.getElementById('list-delete-{{ $report->id }}'), '{{ __('Delete this report') }} ?', '{{ addslashes(__('The report') . ' &quot;' . addslashes($report->title) . '&quot; ' . __('will be permanently deleted.')) }}')"
+                                    class="flex items-center justify-center gap-1.5 px-3 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 active:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1 transition-all duration-150">
+                                    <i class="fa-solid fa-trash"></i> {{ __('Delete') }}
+                                </button>
+                            </form>
                             @if($report->status === 'completed')
                                 <a href="{{ route('reports.download', $report) }}"
-                                   class="flex items-center justify-center px-3 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 text-sm font-medium rounded-md transition-colors">
-                                    <i class="fa-solid fa-download mr-2"></i> {{ __('Download') }}
+                                   class="col-span-2 flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-1 transition-all duration-150">
+                                    <i class="fa-solid fa-download"></i> {{ __('Download') }}
                                 </a>
                             @endif
                         </div>
