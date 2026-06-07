@@ -103,11 +103,52 @@ $(document).ready(function() {
             }
         },
         drawCallback: function() {
-            // Re-initialize AlpineJS components after DataTable draw if needed
-            // But since Alpine handles DOM changes well, usually not strictly required if using x-init
+            // Close all open menus on redraw
+            document.querySelectorAll('.action-menu').forEach(m => m.classList.add('hidden'));
         }
     });
 });
+
+// Toggle action dropdown with fixed positioning (avoids overflow clipping)
+window.toggleActionMenu = function(btn) {
+    const menu = btn.closest('div').querySelector('.action-menu');
+    const allMenus = document.querySelectorAll('.action-menu');
+
+    // Close all other menus
+    allMenus.forEach(m => {
+        if (m !== menu) m.classList.add('hidden');
+    });
+
+    if (menu.classList.contains('hidden')) {
+        const rect = btn.getBoundingClientRect();
+        const menuWidth = 176; // w-44 = 11rem = 176px
+        let left = rect.right - menuWidth;
+        let top = rect.bottom + 4;
+
+        // Prevent going off-screen left
+        if (left < 8) left = 8;
+        // Prevent going off-screen right
+        if (left + menuWidth > window.innerWidth - 8) left = window.innerWidth - menuWidth - 8;
+        // Flip up if not enough space below
+        if (top + 160 > window.innerHeight) top = rect.top - 160;
+
+        menu.style.top = top + 'px';
+        menu.style.left = left + 'px';
+        menu.classList.remove('hidden');
+    } else {
+        menu.classList.add('hidden');
+    }
+};
+
+// Close menus on outside click or scroll
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.action-btn') && !e.target.closest('.action-menu')) {
+        document.querySelectorAll('.action-menu').forEach(m => m.classList.add('hidden'));
+    }
+});
+window.addEventListener('scroll', function() {
+    document.querySelectorAll('.action-menu').forEach(m => m.classList.add('hidden'));
+}, true);
 </script>
 
 <style>
