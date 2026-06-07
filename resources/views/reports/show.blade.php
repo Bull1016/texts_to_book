@@ -53,7 +53,7 @@
                     @foreach($sections as $index => $section)
                         <article class="bg-white rounded-lg shadow p-8">
                             <div class="mb-6">
-                                <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ $section->title }}</h2>
+                                <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ $index + 1 }}. {{ $section->title }}</h2>
 
                                 @if($section->images->count())
                                     <div class="mb-6">
@@ -66,6 +66,19 @@
                                 <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">
                                     {!! nl2br(e($section->content)) !!}
                                 </div>
+
+                                @if($section->children->count())
+                                    <div class="mt-8 space-y-8">
+                                        @foreach($section->children as $subIndex => $sub)
+                                            <div class="border-t border-gray-100 pt-6">
+                                                <h3 class="text-xl font-bold text-gray-900 mb-3">{{ $index + 1 }}.{{ $subIndex + 1 }} {{ $sub->title }}</h3>
+                                                <div class="prose prose-md max-w-none text-gray-700 leading-relaxed">
+                                                    {!! nl2br(e($sub->content)) !!}
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         </article>
                     @endforeach

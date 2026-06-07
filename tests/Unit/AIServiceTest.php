@@ -62,7 +62,7 @@ class AIServiceTest extends TestCase
         ]);
 
         $service = new AIService();
-        $content = $service->generateContent('Chapter Title');
+        $content = $service->generateContent('Topic', 'Outline', 'Chapter Title', 'Section Title', 'Description', 'fr');
 
         $this->assertEquals('Generated content here.', $content);
 

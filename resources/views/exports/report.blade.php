@@ -19,13 +19,10 @@
         }
         .cover {
             text-align: center;
-            padding: 100px 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 150px 40px;
+            background-color: #667eea;
             color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            min-height: 100vh;
+            height: 100%;
         }
         .cover h1 {
             font-size: 48px;
@@ -47,6 +44,13 @@
         .toc-item {
             margin: 10px 0;
             padding-left: 20px;
+            font-weight: bold;
+        }
+        .toc-subitem {
+            margin: 5px 0;
+            padding-left: 40px;
+            font-size: 14px;
+            color: #555;
         }
         .content {
             padding: 40px;
@@ -95,6 +99,9 @@
         <h2>Table of Contents</h2>
         @foreach($sections as $index => $section)
             <div class="toc-item">{{ $index + 1 }}. {{ $section->title }}</div>
+            @foreach($section->children as $subIndex => $sub)
+                <div class="toc-subitem">{{ $index + 1 }}.{{ $subIndex + 1 }} {{ $sub->title }}</div>
+            @endforeach
         @endforeach
     </div>
 
@@ -109,6 +116,13 @@
                 @endforeach
 
                 <div style="white-space: pre-wrap;">{{ $section->content }}</div>
+
+                @foreach($section->children as $subIndex => $sub)
+                    <div style="margin-top: 30px;">
+                        <h3>{{ $index + 1 }}.{{ $subIndex + 1 }} {{ $sub->title }}</h3>
+                        <div style="white-space: pre-wrap; margin-top: 10px;">{{ $sub->content }}</div>
+                    </div>
+                @endforeach
             </div>
         @endforeach
     </div>

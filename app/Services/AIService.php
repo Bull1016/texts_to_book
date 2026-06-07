@@ -18,9 +18,13 @@ class AIService
         $this->baseUrl = config('ai.base_url');
     }
 
-    public function generateOutline(string $topic): array
+    public function generateOutline(string $topic, string $language = 'fr'): array
     {
-        $prompt = str_replace('{topic}', $topic, config('ai.prompts.outline'));
+        $prompt = str_replace(
+            ['{topic}', '{language}'],
+            [$topic, $language],
+            config('ai.prompts.outline')
+        );
 
         try {
             $response = Http::post("{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}", [
@@ -72,9 +76,19 @@ class AIService
         }
     }
 
-    public function generateContent(string $title): string
-    {
-        $prompt = str_replace('{title}', $title, config('ai.prompts.content'));
+    public function generateContent(
+        string $topic,
+        string $outline,
+        string $chapterTitle,
+        string $title,
+        string $description,
+        string $language = 'fr'
+    ): string {
+        $prompt = str_replace(
+            ['{topic}', '{outline}', '{chapter_title}', '{title}', '{description}', '{language}'],
+            [$topic, $outline, $chapterTitle, $title, $description, $language],
+            config('ai.prompts.content')
+        );
 
         try {
             $response = Http::post("{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}", [

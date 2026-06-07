@@ -31,6 +31,18 @@
                     <p class="text-sm text-gray-500 mt-1">The more detail you provide, the better the AI can generate content</p>
                 </div>
 
+                <div>
+                    <label for="language" class="block text-sm font-medium text-gray-700 mb-2">Report Language</label>
+                    <select name="language" id="language" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="fr" {{ old('language') == 'fr' ? 'selected' : '' }}>French</option>
+                        <option value="en" {{ old('language', 'en') == 'en' ? 'selected' : '' }}>English</option>
+                        <option value="es" {{ old('language') == 'es' ? 'selected' : '' }}>Spanish</option>
+                        <option value="de" {{ old('language') == 'de' ? 'selected' : '' }}>German</option>
+                    </select>
+                    <p class="text-sm text-gray-500 mt-1">The language in which the report will be generated</p>
+                </div>
+
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 class="font-semibold text-blue-900 mb-2">⚡ What happens next:</h3>
                     <ul class="text-sm text-blue-800 space-y-1">
