@@ -75,13 +75,13 @@
       0 => 'Spatie\\LaravelIgnition\\IgnitionServiceProvider',
     ),
   ),
-  'yajra/laravel-datatables-oracle' =>
+  'yajra/laravel-datatables-oracle' => 
   array (
-    'aliases' =>
+    'aliases' => 
     array (
       'DataTables' => 'Yajra\\DataTables\\Facades\\DataTables',
     ),
-    'providers' =>
+    'providers' => 
     array (
       0 => 'Yajra\\DataTables\\DataTablesServiceProvider',
     ),
