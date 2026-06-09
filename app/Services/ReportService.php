@@ -147,7 +147,7 @@ class ReportService
             Log::error("Report generation failed for report {$report->id}", ['error' => $e->getMessage()]);
             $report->update([
                 'status' => 'failed',
-                'error_message' => $e->getMessage(),
+                'error_message' => mb_substr($e->getMessage(), 0, 500),
                 'current_step' => __('Error during generation')
             ]);
         }

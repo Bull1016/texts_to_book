@@ -30,4 +30,17 @@ class GenerateReportJob implements ShouldQueue
         Log::info("Starting background generation for report {$this->report->id}");
         $reportService->generateReport($this->report);
     }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(\Throwable $exception): void
+    {
+        Log::error("GenerateReportJob failed for report {$this->report->id}", ['error' => $exception->getMessage()]);
+        $this->report->update([
+            'status' => 'failed',
+            'error_message' => mb_substr($exception->getMessage(), 0, 500),
+            'current_step' => __('Error during generation'),
+        ]);
+    }
 }
