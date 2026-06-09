@@ -115,12 +115,12 @@
                     <img src="{{ $image->image_url }}" alt="{{ $image->prompt }}">
                 @endforeach
 
-                <div style="white-space: pre-wrap;">{{ $section->content }}</div>
+                <div>{!! \Illuminate\Support\Str::markdown($section->content) !!}</div>
 
                 @foreach($section->children as $subIndex => $sub)
                     <div style="margin-top: 30px;">
                         <h3>{{ $index + 1 }}.{{ $subIndex + 1 }} {{ $sub->title }}</h3>
-                        <div style="white-space: pre-wrap; margin-top: 10px;">{{ $sub->content }}</div>
+                        <div style="margin-top: 10px;">{!! \Illuminate\Support\Str::markdown($sub->content) !!}</div>
                     </div>
                 @endforeach
             </div>

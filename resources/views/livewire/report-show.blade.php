@@ -171,7 +171,7 @@ new class extends Component {
                         @endif
 
                         <div class="prose prose-xl max-w-none text-gray-800 leading-relaxed font-serif">
-                            {!! nl2br(e($section->content)) !!}
+                            {!! \Illuminate\Support\Str::markdown($section->content) !!}
                         </div>
 
                         @if($section->children->count())
@@ -183,7 +183,7 @@ new class extends Component {
                                             {{ $sub->title }}
                                         </h3>
                                         <div class="prose prose-lg max-w-none text-gray-800 leading-relaxed font-serif">
-                                            {!! nl2br(e($sub->content)) !!}
+                                            {!! \Illuminate\Support\Str::markdown($sub->content) !!}
                                         </div>
                                     </div>
                                 @endforeach

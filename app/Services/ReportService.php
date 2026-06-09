@@ -20,101 +20,117 @@ class ReportService
         $this->imageService = $imageService;
     }
 
+    private function createPrefaceSections(Report $report, array $analysisResult): void
+    {
+        ReportSection::create([
+            'report_id' => $report->id,
+            'title'     => __('Analyse du sujet'),
+            'content'   => $analysisResult['analysis'],
+            'order'     => 0,
+        ]);
+
+        ReportSection::create([
+            'report_id' => $report->id,
+            'title'     => __('Public cible'),
+            'content'   => $analysisResult['target_audience'],
+            'order'     => 1,
+        ]);
+
+        ReportSection::create([
+            'report_id' => $report->id,
+            'title'     => __('Résumé général'),
+            'content'   => $analysisResult['summary'],
+            'order'     => 2,
+        ]);
+    }
+
     public function generateReport(Report $report): void
     {
         try {
             $report->update([
                 'status' => 'generating',
                 'progress' => 5,
-                'current_step' => __('Generating cover image...')
+                'current_step' => __('Analyse du sujet et création du plan...')
             ]);
 
-            // Step 0: Generate cover image
-            Log::info("Generating cover image for report {$report->id}");
-            $coverPrompt = $report->title . ' professional book cover illustration';
-            $coverUrl = $this->imageService->fetchImage($coverPrompt);
+            // Étape 1 : Analyse et Plan détaillé
+            Log::info("Generating analysis and outline for report {$report->id}");
+            $analysisResult = $this->aiService->generateAnalysis($report->title, $report->subject, $report->language ?? 'fr');
+
+            $report->update([
+                'outline' => $analysisResult['chapters'],
+                'progress' => 15,
+            ]);
+
+            // Étape 2 : Création des sections de préface (Analyse, Public, Résumé)
+            $this->createPrefaceSections($report, $analysisResult);
+
+            // Étape 3 : Génération de la couverture
+            $report->update([
+                'current_step' => __('Génération de l\'image de couverture...')
+            ]);
+            $coverUrl = $this->imageService->fetchImage($analysisResult['cover_illustration_prompt']);
             if ($coverUrl) {
                 $report->update(['cover_image_url' => $coverUrl]);
             }
 
-            $report->update([
-                'progress' => 10,
-                'current_step' => __('Generating report outline...')
-            ]);
-
-            // Step 1: Generate outline
-            Log::info("Generating outline for report {$report->id}");
-            $outline = $this->aiService->generateOutline($report->subject, $report->language ?? 'fr');
-            $report->update([
-                'outline' => $outline,
-                'progress' => 20,
-            ]);
-
-            $outlineText = collect($outline)->map(function ($c) {
+            $outlineText = collect($analysisResult['chapters'])->map(function ($c) {
                 $subs = collect($c['subsections'] ?? [])->map(fn($s) => "- " . $s['title'])->implode("\n");
                 return $c['title'] . "\n" . $subs;
             })->implode("\n\n");
 
-            $totalChapters = count($outline);
-            $totalSubsections = collect($outline)->sum(fn($c) => count($c['subsections'] ?? []));
+            $totalChapters = count($analysisResult['chapters']);
+            $totalSubsections = collect($analysisResult['chapters'])->sum(fn($c) => count($c['subsections'] ?? []));
             $totalSteps = $totalChapters + $totalSubsections;
             $currentStep = 0;
 
-            // Step 2: Generate content for each section
-            foreach ($outline as $chapterIndex => $chapter) {
+            // Étape 4 : Génération du contenu détaillé
+            foreach ($analysisResult['chapters'] as $chapterIndex => $chapter) {
                 Log::info("Generating content for chapter: {$chapter['title']}");
 
                 $report->update([
-                    'current_step' => __('Generating chapter: :title...', ['title' => $chapter['title']])
+                    'current_step' => __('Génération du chapitre : :title...', ['title' => $chapter['title']])
                 ]);
 
                 $chapterSection = ReportSection::create([
                     'report_id' => $report->id,
                     'title'     => $chapter['title'],
-                    'content'   => '', // Chapters might just be containers or have intro
-                    'order'     => $chapterIndex,
+                    'content'   => '',
+                    'order'     => $chapterIndex + 3, // Après les 3 sections de préface
                 ]);
 
-                // Generate intro for chapter if needed, or just proceed to sub-sections
-                $chapterContent = $this->aiService->generateContent(
-                    $report->subject,
-                    $outlineText,
-                    $chapter['title'],
-                    $chapter['title'],
-                    $chapter['description'] ?? '',
-                    $report->language ?? 'fr'
-                );
-                $chapterSection->update(['content' => $chapterContent]);
-
-                // Step 3: Fetch images for chapter
-                $imagePrompt = $this->imageService->generateImagePrompt($chapter['title']);
-                $imageUrl = $this->imageService->fetchImage($imagePrompt);
-                if ($imageUrl) {
-                    ReportImage::create([
-                        'report_section_id' => $chapterSection->id,
-                        'prompt' => $imagePrompt,
-                        'image_url' => $imageUrl,
-                        'source' => 'unsplash',
-                        'order' => 0,
-                    ]);
+                // Illustration du chapitre
+                if (!empty($chapter['illustration_prompt'])) {
+                    $imageUrl = $this->imageService->fetchImage($chapter['illustration_prompt']);
+                    if ($imageUrl) {
+                        ReportImage::create([
+                            'report_section_id' => $chapterSection->id,
+                            'prompt' => $chapter['illustration_prompt'],
+                            'image_url' => $imageUrl,
+                            'source' => config('images.default'),
+                            'order' => 0,
+                        ]);
+                    }
                 }
 
                 $currentStep++;
                 $progress = 20 + ($currentStep / $totalSteps) * 75;
                 $report->update(['progress' => (int)$progress]);
 
-                // Generate sub-sections
+                // Sous-sections
                 if (isset($chapter['subsections']) && is_array($chapter['subsections'])) {
                     foreach ($chapter['subsections'] as $subIndex => $sub) {
                         Log::info("Generating content for sub-section: {$sub['title']}");
 
                         $report->update([
-                            'current_step' => __('Generating sub-section: :title...', ['title' => $sub['title']])
+                            'current_step' => __('Génération de la section : :title...', ['title' => $sub['title']])
                         ]);
 
                         $subContent = $this->aiService->generateContent(
                             $report->subject,
                             $outlineText,
+                            $analysisResult['target_audience'],
+                            $analysisResult['summary'],
                             $chapter['title'],
                             $sub['title'],
                             $sub['description'] ?? '',

@@ -14,18 +14,30 @@ class ImageService
 
     public function __construct()
     {
-        $this->apiKey = config('images.providers.unsplash.api_key');
-        $this->baseUrl = config('images.providers.unsplash.base_url');
         $this->width = config('images.width');
         $this->height = config('images.height');
     }
 
-    public function fetchImage(string $query): ?string
+    public function fetchImage(string $prompt): ?string
+    {
+        $provider = config('images.default');
+
+        if ($provider === 'gemini') {
+            return $this->generateGeminiImage($prompt);
+        }
+
+        return $this->fetchUnsplashImage($prompt);
+    }
+
+    private function fetchUnsplashImage(string $query): ?string
     {
         try {
+            $apiKey = config('images.providers.unsplash.api_key');
+            $baseUrl = config('images.providers.unsplash.base_url');
+
             $response = Http::withHeaders([
-                'Authorization' => "Client-ID {$this->apiKey}",
-            ])->get("{$this->baseUrl}/search/photos", [
+                'Authorization' => "Client-ID {$apiKey}",
+            ])->get("{$baseUrl}/search/photos", [
                 'query' => $query,
                 'per_page' => 1,
                 'orientation' => 'landscape',
@@ -40,11 +52,43 @@ class ImageService
 
             $photo = $results[0];
 
-            // Return the raw URL with dimensions
             return "{$photo['urls']['raw']}&w={$this->width}&h={$this->height}&fit=crop&crop=entropy";
         } catch (\Exception $e) {
-            Log::error('Image fetch failed', ['error' => $e->getMessage(), 'query' => $query]);
+            Log::error('Unsplash image fetch failed', ['error' => $e->getMessage(), 'query' => $query]);
             return null;
+        }
+    }
+
+    private function generateGeminiImage(string $prompt): ?string
+    {
+        try {
+            $config = config('images.providers.gemini');
+            $url = "{$config['base_url']}/models/{$config['model']}:predict?key={$config['api_key']}";
+
+            $response = Http::post($url, [
+                'instances' => [
+                    ['prompt' => $prompt]
+                ],
+                'parameters' => [
+                    'sampleCount' => 1,
+                ],
+            ])->throw();
+
+            $base64Image = $response->json('predictions.0.bytesBase64Encoded');
+
+            if (!$base64Image) {
+                Log::warning("No Gemini image generated for prompt: {$prompt}");
+                return null;
+            }
+
+            return 'data:image/png;base64,' . $base64Image;
+        } catch (\Exception $e) {
+            Log::error('Gemini image generation failed', [
+                'error' => $e->getMessage(),
+                'response' => isset($response) ? $response->body() : 'No response',
+                'prompt' => $prompt
+            ]);
+            return $this->fetchUnsplashImage($prompt); // Fallback to Unsplash
         }
     }
 
