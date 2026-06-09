@@ -18,12 +18,12 @@ class AIService
         $this->baseUrl = config('ai.base_url');
     }
 
-    public function generateOutline(string $topic, string $language = 'fr'): array
+    public function generateAnalysis(string $title, string $subject, string $language = 'fr'): array
     {
         $prompt = str_replace(
-            ['{topic}', '{language}'],
-            [$topic, $language],
-            config('ai.prompts.outline')
+            ['{title}', '{subject}', '{language}'],
+            [$title, $subject, $language],
+            config('ai.prompts.analysis')
         );
 
         try {
@@ -32,13 +32,13 @@ class AIService
                     [
                         'role' => 'user',
                         'parts' => [
-                            ['text' => "You are a professional book writer creating detailed outlines.\n\n" . $prompt]
+                            ['text' => $prompt]
                         ],
                     ],
                 ],
                 'generationConfig' => [
                     'temperature' => 0.7,
-                    'maxOutputTokens' => 2000,
+                    'maxOutputTokens' => 3000,
                     'responseMimeType' => 'application/json',
                 ],
             ])->throw();
@@ -48,27 +48,13 @@ class AIService
             if ($content) {
                 $parsed = json_decode($content, true);
                 if ($parsed && isset($parsed['chapters'])) {
-                    return $parsed['chapters'];
+                    return $parsed;
                 }
             }
 
-            // Fallback: Try to parse JSON from the response if something went wrong with the JSON mode
-            $jsonMatch = preg_match('/\{.*\}/s', $content, $matches);
-            if ($jsonMatch) {
-                $parsed = json_decode($matches[0], true);
-                if ($parsed && isset($parsed['chapters'])) {
-                    return $parsed['chapters'];
-                }
-            }
-
-            return [
-                [
-                    'title' => 'Chapter 1: Introduction',
-                    'description' => substr($content, 0, 200),
-                ],
-            ];
+            throw new \Exception("Invalid AI response for analysis: " . substr($content, 0, 100));
         } catch (\Exception $e) {
-            Log::error('AI outline generation failed', [
+            Log::error('AI analysis generation failed', [
                 'error' => $e->getMessage(),
                 'response' => isset($response) ? $response->body() : 'No response',
             ]);
@@ -79,14 +65,16 @@ class AIService
     public function generateContent(
         string $topic,
         string $outline,
+        string $targetAudience,
+        string $summary,
         string $chapterTitle,
         string $title,
         string $description,
         string $language = 'fr'
     ): string {
         $prompt = str_replace(
-            ['{topic}', '{outline}', '{chapter_title}', '{title}', '{description}', '{language}'],
-            [$topic, $outline, $chapterTitle, $title, $description, $language],
+            ['{topic}', '{outline}', '{target_audience}', '{summary}', '{chapter_title}', '{title}', '{description}', '{language}'],
+            [$topic, $outline, $targetAudience, $summary, $chapterTitle, $title, $description, $language],
             config('ai.prompts.content')
         );
 
@@ -96,13 +84,13 @@ class AIService
                     [
                         'role' => 'user',
                         'parts' => [
-                            ['text' => "You are a professional book writer. Write engaging and informative content.\n\n" . $prompt]
+                            ['text' => $prompt]
                         ],
                     ],
                 ],
                 'generationConfig' => [
                     'temperature' => 0.7,
-                    'maxOutputTokens' => 1500,
+                    'maxOutputTokens' => 2000,
                 ],
             ])->throw();
 

@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 class AIServiceTest extends TestCase
 {
-    public function test_generate_outline_calls_gemini_correctly()
+    public function test_generate_analysis_calls_gemini_correctly()
     {
         Http::fake([
             'generativelanguage.googleapis.com/*' => Http::response([
@@ -18,9 +18,12 @@ class AIServiceTest extends TestCase
                             'parts' => [
                                 [
                                     'text' => json_encode([
+                                        'analysis' => 'Subject analysis',
+                                        'target_audience' => 'Professionals',
+                                        'summary' => 'Overall summary',
+                                        'cover_illustration_prompt' => 'Cover prompt',
                                         'chapters' => [
-                                            ['title' => 'Chapter 1', 'description' => 'Desc 1'],
-                                            ['title' => 'Chapter 2', 'description' => 'Desc 2'],
+                                            ['title' => 'Chapter 1', 'description' => 'Desc 1', 'illustration_prompt' => 'Ch1 prompt', 'subsections' => []],
                                         ]
                                     ])
                                 ]
@@ -32,10 +35,11 @@ class AIServiceTest extends TestCase
         ]);
 
         $service = new AIService();
-        $outline = $service->generateOutline('Test Topic');
+        $analysis = $service->generateAnalysis('Title', 'Test Topic');
 
-        $this->assertCount(2, $outline);
-        $this->assertEquals('Chapter 1', $outline[0]['title']);
+        $this->assertArrayHasKey('analysis', $analysis);
+        $this->assertCount(1, $analysis['chapters']);
+        $this->assertEquals('Chapter 1', $analysis['chapters'][0]['title']);
 
         Http::assertSent(function ($request) {
             return str_contains($request->url(), 'models/gemini-2.5-flash:generateContent') &&
@@ -62,7 +66,7 @@ class AIServiceTest extends TestCase
         ]);
 
         $service = new AIService();
-        $content = $service->generateContent('Topic', 'Outline', 'Chapter Title', 'Section Title', 'Description', 'fr');
+        $content = $service->generateContent('Topic', 'Outline', 'Audience', 'Summary', 'Chapter Title', 'Section Title', 'Description', 'fr');
 
         $this->assertEquals('Generated content here.', $content);
 
