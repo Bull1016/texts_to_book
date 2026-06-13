@@ -236,3 +236,4 @@ php artisan test
 php artisan test --coverage
 ```
 
+php artisan queue:work --tries=1 --timeout=120

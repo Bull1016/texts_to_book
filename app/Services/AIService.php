@@ -38,7 +38,7 @@ class AIService
                 ],
                 'generationConfig' => [
                     'temperature' => 0.7,
-                    'maxOutputTokens' => 3000,
+                    'maxOutputTokens' => 8192,
                     'responseMimeType' => 'application/json',
                 ],
             ])->throw();
@@ -90,7 +90,7 @@ class AIService
                 ],
                 'generationConfig' => [
                     'temperature' => 0.7,
-                    'maxOutputTokens' => 2000,
+                    'maxOutputTokens' => 8192,
                 ],
             ])->throw();
 
