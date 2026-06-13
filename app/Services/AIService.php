@@ -13,6 +13,13 @@ class AIService
     private int $timeout;
     private int $thinkingBudget;
 
+    /**
+     * Initialize the service by loading AI-related configuration values.
+     *
+     * Loads the API key, model name, and base URL from config keys `ai.api_key`, `ai.model`,
+     * and `ai.base_url`. Also loads `ai.timeout` and `ai.thinking_budget`, casting them to
+     * integers and storing them as the request timeout and thinking budget respectively.
+     */
     public function __construct()
     {
         $this->apiKey = config('ai.api_key');
@@ -22,6 +29,17 @@ class AIService
         $this->thinkingBudget = (int) config('ai.thinking_budget', 0);
     }
 
+    /**
+     * Generates a structured analysis (including chapters) for the given title and subject using the configured AI model.
+     *
+     * Sends the composed prompt to the AI service and parses the returned JSON content into an associative array.
+     *
+     * @param string $title The title to include in the analysis prompt.
+     * @param string $subject The subject/context to include in the analysis prompt.
+     * @param string $language The language code for the analysis output (default 'fr').
+     * @return array The decoded associative array produced by the AI; must include a `chapters` key on success.
+     * @throws \Exception If the AI response is missing or invalid, or if the HTTP request fails.
+     */
     public function generateAnalysis(string $title, string $subject, string $language = 'fr'): array
     {
         $prompt = str_replace(
@@ -69,6 +87,19 @@ class AIService
         }
     }
 
+    /**
+     * Generate chapter content from the AI using the configured prompt template and provided context.
+     *
+     * @param string $topic The main topic for the content.
+     * @param string $outline The chapter or section outline to guide generation.
+     * @param string $targetAudience Description of the intended audience.
+     * @param string $summary A short summary of the content to produce.
+     * @param string $chapterTitle The specific chapter title to focus on.
+     * @param string $title The overall work title.
+     * @param string $description Additional description or instructions for the AI.
+     * @param string $language Language code for the generated content (defaults to 'fr').
+     * @return string The raw text content produced by the AI (extracted from the response at candidates.0.content.parts.0.text).
+     */
     public function generateContent(
         string $topic,
         string $outline,
