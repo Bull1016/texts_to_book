@@ -185,9 +185,15 @@ php artisan key:generate
 # Migrer base de données
 php artisan migrate
 
-# Démarrer le serveur
+# Démarrer le serveur et la file d'attente (Queue)
+# 1. Démarrer le serveur de développement Laravel
 php artisan serve
+
+# 2. Démarrer le build et le dev server de Vite (assets)
 npm run dev
+
+# 3. Lancer le worker pour traiter la génération en arrière-plan (requis)
+php artisan queue:work --tries=1 --timeout=120
 ```
 
 ---
@@ -219,6 +225,11 @@ npm run dev
 
 Le système utilise actuellement l'API Google Gemini (via Google AI Studio). La configuration se trouve dans `config/ai.php` et le service principal est `app/Services/AIService.php`.
 
+> [!IMPORTANT]
+> **Modèles de Pensée (Thinking Models) comme `gemini-2.5-flash`** :  
+> Ce modèle génère des tokens internes de réflexion avant de donner sa réponse finale. Ces tokens de pensée consomment de la place dans la limite maximale autorisée (`maxOutputTokens`).  
+> Pour cette raison, la configuration de `maxOutputTokens` dans `AIService` est fixée à **`8192`** afin d'éviter les troncatures (qui provoquent des erreurs de type `Invalid AI response`). Si vous changez de modèle, assurez-vous de lui laisser une enveloppe de tokens de sortie suffisante.
+
 ### Ajouter une source d’images
 
 1. Créer fournisseur dans `app/Services/Image/Providers/`
@@ -235,5 +246,3 @@ php artisan test
 # Tests avec coverage
 php artisan test --coverage
 ```
-
-php artisan queue:work --tries=1 --timeout=120
