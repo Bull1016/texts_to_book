@@ -10,12 +10,14 @@ class AIService
     private string $apiKey;
     private string $model;
     private string $baseUrl;
+    private int $timeout;
 
     public function __construct()
     {
         $this->apiKey = config('ai.api_key');
         $this->model = config('ai.model');
         $this->baseUrl = config('ai.base_url');
+        $this->timeout = (int) config('ai.timeout', 120);
     }
 
     public function generateAnalysis(string $title, string $subject, string $language = 'fr'): array
@@ -27,7 +29,7 @@ class AIService
         );
 
         try {
-            $response = Http::post("{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}", [
+            $response = Http::timeout($this->timeout)->post("{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}", [
                 'contents' => [
                     [
                         'role' => 'user',
@@ -79,7 +81,7 @@ class AIService
         );
 
         try {
-            $response = Http::post("{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}", [
+            $response = Http::timeout($this->timeout)->post("{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}", [
                 'contents' => [
                     [
                         'role' => 'user',

@@ -11,11 +11,13 @@ class ImageService
     private string $baseUrl;
     private int $width;
     private int $height;
+    private int $timeout;
 
     public function __construct()
     {
         $this->width = config('images.width');
         $this->height = config('images.height');
+        $this->timeout = (int) config('images.timeout', 60);
     }
 
     public function fetchImage(string $prompt): ?string
@@ -35,7 +37,7 @@ class ImageService
             $apiKey = config('images.providers.unsplash.api_key');
             $baseUrl = config('images.providers.unsplash.base_url');
 
-            $response = Http::withHeaders([
+            $response = Http::timeout($this->timeout)->withHeaders([
                 'Authorization' => "Client-ID {$apiKey}",
             ])->get("{$baseUrl}/search/photos", [
                 'query' => $query,
@@ -65,7 +67,7 @@ class ImageService
             $config = config('images.providers.gemini');
             $url = "{$config['base_url']}/models/{$config['model']}:predict?key={$config['api_key']}";
 
-            $response = Http::post($url, [
+            $response = Http::timeout($this->timeout)->post($url, [
                 'instances' => [
                     ['prompt' => $prompt]
                 ],

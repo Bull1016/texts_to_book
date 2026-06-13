@@ -18,4 +18,5 @@ return [
     'quality' => env('IMAGE_QUALITY', 'regular'),
     'width' => env('IMAGE_WIDTH', 800),
     'height' => env('IMAGE_HEIGHT', 600),
+    'timeout' => (int) env('IMAGE_TIMEOUT', 60),
 ];
