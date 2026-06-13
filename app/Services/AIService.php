@@ -30,6 +30,24 @@ class AIService
     }
 
     /**
+     * Determine if thinkingConfig should be included based on the model name and thinking budget.
+     */
+    private function shouldIncludeThinkingConfig(): bool
+    {
+        $supportsThinking = str_contains(strtolower($this->model), 'thinking');
+
+        if (!$supportsThinking) {
+            return false;
+        }
+
+        if ($this->thinkingBudget === 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Generates a structured analysis (including chapters) for the given title and subject using the configured AI model.
      *
      * Sends the composed prompt to the AI service and parses the returned JSON content into an associative array.
@@ -48,25 +66,48 @@ class AIService
             config('ai.prompts.analysis')
         );
 
+        $payload = [
+            'contents' => [
+                [
+                    'role' => 'user',
+                    'parts' => [
+                        ['text' => $prompt]
+                    ],
+                ],
+            ],
+            'generationConfig' => [
+                'temperature' => 0.7,
+                'maxOutputTokens' => 8192,
+                'responseMimeType' => 'application/json',
+            ],
+        ];
+
+        if ($this->shouldIncludeThinkingConfig()) {
+            $payload['generationConfig']['thinkingConfig'] = [
+                'thinkingBudget' => $this->thinkingBudget,
+            ];
+        }
+
         try {
-            $response = Http::timeout($this->timeout)->post("{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}", [
-                'contents' => [
-                    [
-                        'role' => 'user',
-                        'parts' => [
-                            ['text' => $prompt]
-                        ],
-                    ],
-                ],
-                'generationConfig' => [
-                    'temperature' => 0.7,
-                    'maxOutputTokens' => 8192,
-                    'responseMimeType' => 'application/json',
-                    'thinkingConfig' => [
-                        'thinkingBudget' => $this->thinkingBudget,
-                    ],
-                ],
-            ])->throw();
+            try {
+                $response = Http::timeout($this->timeout)->post(
+                    "{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}",
+                    $payload
+                )->throw();
+            } catch (\Illuminate\Http\Client\RequestException $e) {
+                if ($e->response->status() === 400 && isset($payload['generationConfig']['thinkingConfig'])) {
+                    Log::warning('AI analysis generation failed with 400, retrying without thinkingConfig', [
+                        'error' => $e->getMessage(),
+                    ]);
+                    unset($payload['generationConfig']['thinkingConfig']);
+                    $response = Http::timeout($this->timeout)->post(
+                        "{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}",
+                        $payload
+                    )->throw();
+                } else {
+                    throw $e;
+                }
+            }
 
             $content = $response->json('candidates.0.content.parts.0.text');
 
@@ -116,24 +157,47 @@ class AIService
             config('ai.prompts.content')
         );
 
+        $payload = [
+            'contents' => [
+                [
+                    'role' => 'user',
+                    'parts' => [
+                        ['text' => $prompt]
+                    ],
+                ],
+            ],
+            'generationConfig' => [
+                'temperature' => 0.7,
+                'maxOutputTokens' => 8192,
+            ],
+        ];
+
+        if ($this->shouldIncludeThinkingConfig()) {
+            $payload['generationConfig']['thinkingConfig'] = [
+                'thinkingBudget' => $this->thinkingBudget,
+            ];
+        }
+
         try {
-            $response = Http::timeout($this->timeout)->post("{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}", [
-                'contents' => [
-                    [
-                        'role' => 'user',
-                        'parts' => [
-                            ['text' => $prompt]
-                        ],
-                    ],
-                ],
-                'generationConfig' => [
-                    'temperature' => 0.7,
-                    'maxOutputTokens' => 8192,
-                    'thinkingConfig' => [
-                        'thinkingBudget' => $this->thinkingBudget,
-                    ],
-                ],
-            ])->throw();
+            try {
+                $response = Http::timeout($this->timeout)->post(
+                    "{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}",
+                    $payload
+                )->throw();
+            } catch (\Illuminate\Http\Client\RequestException $e) {
+                if ($e->response->status() === 400 && isset($payload['generationConfig']['thinkingConfig'])) {
+                    Log::warning('AI content generation failed with 400, retrying without thinkingConfig', [
+                        'error' => $e->getMessage(),
+                    ]);
+                    unset($payload['generationConfig']['thinkingConfig']);
+                    $response = Http::timeout($this->timeout)->post(
+                        "{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}",
+                        $payload
+                    )->throw();
+                } else {
+                    throw $e;
+                }
+            }
 
             return $response->json('candidates.0.content.parts.0.text');
         } catch (\Exception $e) {

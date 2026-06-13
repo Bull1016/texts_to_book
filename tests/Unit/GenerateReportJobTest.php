@@ -88,7 +88,7 @@ class GenerateReportJobTest extends TestCase
 
     public function test_failed_sets_report_status_to_failed()
     {
-        $report = $this->createReport(['status' => 'processing']);
+        $report = $this->createReport(['status' => 'generating']);
         $job = new GenerateReportJob($report);
 
         $exception = new \RuntimeException('Something went wrong');

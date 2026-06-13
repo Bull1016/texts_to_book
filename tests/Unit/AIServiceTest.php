@@ -78,6 +78,11 @@ class AIServiceTest extends TestCase
 
     public function test_generate_analysis_includes_thinking_config_in_request()
     {
+        config([
+            'ai.model' => 'gemini-2.0-flash-thinking-exp',
+            'ai.thinking_budget' => 2048,
+        ]);
+
         Http::fake([
             'generativelanguage.googleapis.com/*' => Http::response([
                 'candidates' => [
@@ -101,13 +106,17 @@ class AIServiceTest extends TestCase
         $service->generateAnalysis('Title', 'Subject');
 
         Http::assertSent(function ($request) {
-            return isset($request['generationConfig']['thinkingConfig']['thinkingBudget']);
+            return isset($request['generationConfig']['thinkingConfig']['thinkingBudget']) &&
+                   $request['generationConfig']['thinkingConfig']['thinkingBudget'] === 2048;
         });
     }
 
     public function test_generate_analysis_sends_correct_thinking_budget()
     {
-        config(['ai.thinking_budget' => 5000]);
+        config([
+            'ai.model' => 'gemini-2.0-flash-thinking-exp',
+            'ai.thinking_budget' => 5000,
+        ]);
 
         Http::fake([
             'generativelanguage.googleapis.com/*' => Http::response([
@@ -132,12 +141,18 @@ class AIServiceTest extends TestCase
         $service->generateAnalysis('Title', 'Subject');
 
         Http::assertSent(function ($request) {
-            return $request['generationConfig']['thinkingConfig']['thinkingBudget'] === 5000;
+            return isset($request['generationConfig']['thinkingConfig']['thinkingBudget']) &&
+                   $request['generationConfig']['thinkingConfig']['thinkingBudget'] === 5000;
         });
     }
 
     public function test_generate_content_includes_thinking_config_in_request()
     {
+        config([
+            'ai.model' => 'gemini-2.0-flash-thinking-exp',
+            'ai.thinking_budget' => 2048,
+        ]);
+
         Http::fake([
             'generativelanguage.googleapis.com/*' => Http::response([
                 'candidates' => [
@@ -156,13 +171,17 @@ class AIServiceTest extends TestCase
         $service->generateContent('Topic', 'Outline', 'Audience', 'Summary', 'Ch Title', 'Title', 'Desc', 'fr');
 
         Http::assertSent(function ($request) {
-            return isset($request['generationConfig']['thinkingConfig']['thinkingBudget']);
+            return isset($request['generationConfig']['thinkingConfig']['thinkingBudget']) &&
+                   $request['generationConfig']['thinkingConfig']['thinkingBudget'] === 2048;
         });
     }
 
     public function test_generate_content_sends_correct_thinking_budget()
     {
-        config(['ai.thinking_budget' => 2048]);
+        config([
+            'ai.model' => 'gemini-2.0-flash-thinking-exp',
+            'ai.thinking_budget' => 2048,
+        ]);
 
         Http::fake([
             'generativelanguage.googleapis.com/*' => Http::response([
@@ -182,7 +201,8 @@ class AIServiceTest extends TestCase
         $service->generateContent('Topic', 'Outline', 'Audience', 'Summary', 'Ch Title', 'Title', 'Desc', 'fr');
 
         Http::assertSent(function ($request) {
-            return $request['generationConfig']['thinkingConfig']['thinkingBudget'] === 2048;
+            return isset($request['generationConfig']['thinkingConfig']['thinkingBudget']) &&
+                   $request['generationConfig']['thinkingConfig']['thinkingBudget'] === 2048;
         });
     }
 
@@ -291,7 +311,90 @@ class AIServiceTest extends TestCase
         $service->generateContent('Topic', 'Outline', 'Audience', 'Summary', 'Ch Title', 'Title', 'Desc', 'fr');
 
         Http::assertSent(function ($request) {
-            return $request['generationConfig']['thinkingConfig']['thinkingBudget'] === 0;
+            return !isset($request['generationConfig']['thinkingConfig']);
         });
+    }
+
+    public function test_omits_thinking_config_when_model_does_not_support_thinking()
+    {
+        config([
+            'ai.model' => 'gemini-1.5-flash',
+            'ai.thinking_budget' => 2048,
+        ]);
+
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response([
+                'candidates' => [
+                    [
+                        'content' => [
+                            'parts' => [
+                                ['text' => 'Content.']
+                            ]
+                        ]
+                    ]
+                ]
+            ], 200),
+        ]);
+
+        $service = new AIService();
+        $service->generateContent('Topic', 'Outline', 'Audience', 'Summary', 'Ch Title', 'Title', 'Desc', 'fr');
+
+        Http::assertSent(function ($request) {
+            return !isset($request['generationConfig']['thinkingConfig']);
+        });
+    }
+
+    public function test_retries_on_400_error_when_thinking_config_is_present()
+    {
+        config([
+            'ai.model' => 'gemini-2.0-flash-thinking-exp',
+            'ai.thinking_budget' => 2048,
+        ]);
+
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::sequence()
+                ->push(['error' => ['message' => 'INVALID_ARGUMENT']], 400)
+                ->push([
+                    'candidates' => [
+                        [
+                            'content' => [
+                                'parts' => [
+                                    ['text' => 'Retried content.']
+                                ]
+                            ]
+                        ]
+                    ]
+                ], 200),
+        ]);
+
+        $service = new AIService();
+        $content = $service->generateContent('Topic', 'Outline', 'Audience', 'Summary', 'Ch Title', 'Title', 'Desc', 'fr');
+
+        $this->assertEquals('Retried content.', $content);
+
+        Http::assertSentCount(2);
+    }
+
+    public function test_does_not_retry_if_400_occurs_without_thinking_config()
+    {
+        config([
+            'ai.model' => 'gemini-1.5-flash',
+            'ai.thinking_budget' => 2048,
+        ]);
+
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response(['error' => ['message' => 'Bad request']], 400),
+        ]);
+
+        $service = new AIService();
+
+        try {
+            $service->generateContent('Topic', 'Outline', 'Audience', 'Summary', 'Ch Title', 'Title', 'Desc', 'fr');
+            $this->fail('Expected exception was not thrown');
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $this->assertEquals(400, $e->response->status());
+        }
+
+        Http::assertSentCount(1);
     }
 }
