@@ -11,6 +11,7 @@ class AIService
     private string $model;
     private string $baseUrl;
     private int $timeout;
+    private int $thinkingBudget;
 
     public function __construct()
     {
@@ -18,6 +19,7 @@ class AIService
         $this->model = config('ai.model');
         $this->baseUrl = config('ai.base_url');
         $this->timeout = (int) config('ai.timeout', 120);
+        $this->thinkingBudget = (int) config('ai.thinking_budget', 0);
     }
 
     public function generateAnalysis(string $title, string $subject, string $language = 'fr'): array
@@ -42,6 +44,9 @@ class AIService
                     'temperature' => 0.7,
                     'maxOutputTokens' => 8192,
                     'responseMimeType' => 'application/json',
+                    'thinkingConfig' => [
+                        'thinkingBudget' => $this->thinkingBudget,
+                    ],
                 ],
             ])->throw();
 
@@ -93,6 +98,9 @@ class AIService
                 'generationConfig' => [
                     'temperature' => 0.7,
                     'maxOutputTokens' => 8192,
+                    'thinkingConfig' => [
+                        'thinkingBudget' => $this->thinkingBudget,
+                    ],
                 ],
             ])->throw();
 
