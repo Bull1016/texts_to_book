@@ -314,7 +314,6 @@ class ImageServiceTest extends TestCase
     {
         config([
             'images.default' => 'unsplash',
-            'images.timeout' => null,
         ]);
 
         Http::fake([
@@ -325,13 +324,11 @@ class ImageServiceTest extends TestCase
             ], 200),
         ]);
 
-        // Constructing with null timeout should cast to int 0 from config, but the
-        // service uses (int) config('images.timeout', 60) — null coerces to 0, not 60.
-        // This test documents the actual behaviour: null config yields int(0) timeout.
+        // Constructing without a timeout config should default to 60
         $service = new ImageService();
-        $result = $service->fetchImage('test');
+        $service->fetchImage('test');
 
-        // Request completes (timeout=0 means no timeout in Guzzle)
+        // Request completes with default timeout of 60
         Http::assertSent(function ($request) {
             return str_contains($request->url(), 'api.unsplash.com');
         });

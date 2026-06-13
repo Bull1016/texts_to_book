@@ -98,6 +98,11 @@ class GenerateReportJobTest extends TestCase
             'id' => $report->id,
             'status' => 'failed',
         ]);
+
+        $this->assertDatabaseHas('reports', [
+            'id' => $report->id,
+            'current_step' => 'Error during generation',
+        ]);
     }
 
     public function test_failed_stores_error_message_on_report()
@@ -111,6 +116,11 @@ class GenerateReportJobTest extends TestCase
         $this->assertDatabaseHas('reports', [
             'id' => $report->id,
             'error_message' => 'Detailed error message',
+        ]);
+
+        $this->assertDatabaseHas('reports', [
+            'id' => $report->id,
+            'current_step' => 'Error during generation',
         ]);
     }
 
