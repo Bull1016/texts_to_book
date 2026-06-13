@@ -23,7 +23,8 @@ class ImageService
     {
         $this->width = config('images.width');
         $this->height = config('images.height');
-        $this->timeout = (int) config('images.timeout', 60);
+        $configuredTimeout = (int) config('images.timeout', 60);
+        $this->timeout = max(1, $configuredTimeout);
     }
 
     /**
