@@ -5,6 +5,7 @@ return [
     'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
     'base_url' => 'https://generativelanguage.googleapis.com/v1beta',
     'timeout' => (int) env('GEMINI_TIMEOUT', 120),
+    // Gemini 2.5 uses thinkingBudget; Gemini 3 supports thinkingLevel
     'thinking_budget' => (int) env('GEMINI_THINKING_BUDGET', 0),
 
     'prompts' => [
