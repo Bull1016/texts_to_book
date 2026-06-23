@@ -58,7 +58,7 @@ class AIService
      * @return array The decoded associative array produced by the AI; must include a `chapters` key on success.
      * @throws \Exception If the AI response is missing or invalid, or if the HTTP request fails.
      */
-    public function generateAnalysis(string $title, string $subject, string $language = 'fr'): array
+    public function generateAnalysis(string $title, string $subject, string $language = 'fr', ?string $filePath = null): array
     {
         $prompt = str_replace(
             ['{title}', '{subject}', '{language}'],
@@ -66,13 +66,25 @@ class AIService
             config('ai.prompts.analysis')
         );
 
+        $parts = [['text' => $prompt]];
+
+        if ($filePath && \Illuminate\Support\Facades\Storage::exists($filePath)) {
+            $mimeType = \Illuminate\Support\Facades\Storage::mimeType($filePath);
+            if (str_starts_with($mimeType, 'video/')) {
+                $parts[] = [
+                    'inlineData' => [
+                        'mimeType' => $mimeType,
+                        'data' => base64_encode(\Illuminate\Support\Facades\Storage::get($filePath))
+                    ]
+                ];
+            }
+        }
+
         $payload = [
             'contents' => [
                 [
                     'role' => 'user',
-                    'parts' => [
-                        ['text' => $prompt]
-                    ],
+                    'parts' => $parts,
                 ],
             ],
             'generationConfig' => [

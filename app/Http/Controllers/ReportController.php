@@ -38,10 +38,21 @@ class ReportController extends Controller
     {
         $validated = $request->validated();
 
+        $filePath = null;
+        $fileType = null;
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $filePath = $file->store('uploads', 'public');
+            $fileType = $file->getClientOriginalExtension();
+        }
+
         $report = Report::create([
             'user_id' => auth()->id(),
             'title' => $validated['title'],
-            'subject' => $validated['subject'],
+            'subject' => $validated['subject'] ?? '',
+            'file_path' => $filePath,
+            'file_type' => $fileType,
             'language' => $validated['language'],
             'status' => 'pending',
         ]);

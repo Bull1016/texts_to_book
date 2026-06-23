@@ -23,8 +23,18 @@ class StoreReportRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
-            'subject' => 'required|string|min:10|max:5000',
+            'subject' => 'nullable|string|max:5000',
+            'file' => 'nullable|file|mimes:pdf,docx,odt,mp4,mov,avi,wmv,webm|max:20480', // 20MB limit for Gemini inline data
             'language' => 'required|string|in:fr,en,es,de',
         ];
+    }
+
+    protected function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            if (empty($this->subject) && !$this->hasFile('file')) {
+                $validator->errors()->add('subject', __('Please provide either a subject description or upload a file.'));
+            }
+        });
     }
 }

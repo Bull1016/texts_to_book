@@ -15,8 +15,8 @@
         </div>
 
         <!-- Form Card -->
-        <div class="bg-white rounded-[2.5rem] shadow-xl shadow-blue-900/5 border border-gray-100 overflow-hidden">
-            <form action="{{ route('reports.store') }}" method="POST" class="p-8 md:p-12 space-y-8">
+        <div x-data="{ activeTab: 'text' }" class="bg-white rounded-[2.5rem] shadow-xl shadow-blue-900/5 border border-gray-100 overflow-hidden">
+            <form action="{{ route('reports.store') }}" method="POST" enctype="multipart/form-data" class="p-8 md:p-12 space-y-8">
                 @csrf
 
                 <!-- Title -->
@@ -26,6 +26,22 @@
                            class="w-full bg-gray-50 border-2 border-transparent focus:border-blue-100 focus:bg-white focus:ring-4 focus:ring-blue-50 rounded-2xl px-6 py-4 text-lg font-bold transition-all placeholder-gray-300"
                            placeholder="{{ __('e.g., The Future of Artificial Intelligence') }}">
                     @error('title') <p class="text-red-500 text-xs font-bold mt-1 ml-1">{{ $message }}</p> @enderror
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex p-1 bg-gray-50 rounded-2xl">
+                    <button type="button"
+                            @click="activeTab = 'text'"
+                            :class="activeTab === 'text' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'"
+                            class="flex-1 py-3 text-sm font-bold rounded-xl transition-all">
+                        <i class="fa-solid fa-align-left mr-2"></i> {{ __('Text / Mails') }}
+                    </button>
+                    <button type="button"
+                            @click="activeTab = 'file'"
+                            :class="activeTab === 'file' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'"
+                            class="flex-1 py-3 text-sm font-bold rounded-xl transition-all">
+                        <i class="fa-solid fa-file-arrow-up mr-2"></i> {{ __('Upload File') }}
+                    </button>
                 </div>
 
                 <!-- Language -->
@@ -46,18 +62,31 @@
                     </div>
                 </div>
 
-                <!-- Subject/Content -->
-                <div class="space-y-2">
+                <!-- Subject/Content (Text Tab) -->
+                <div x-show="activeTab === 'text'" class="space-y-2">
                     <label for="subject" class="text-sm font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('What is it about?') }}</label>
                     <div class="relative">
-                        <textarea name="subject" id="subject" rows="6" required
+                        <textarea name="subject" id="subject" rows="6"
                                   class="w-full bg-gray-50 border-2 border-transparent focus:border-blue-100 focus:bg-white focus:ring-4 focus:ring-blue-50 rounded-[2rem] px-8 py-6 text-base font-medium leading-relaxed transition-all placeholder-gray-300 min-h-[200px]"
                                   placeholder="{{ __('Describe the subject, key points you want to cover, and the overall tone of the book...') }}">{{ old('subject') }}</textarea>
-                        <div class="absolute bottom-6 right-8 text-[10px] font-black uppercase tracking-widest text-gray-300">
-                            {{ __('Minimum 10 characters') }}
-                        </div>
                     </div>
                     @error('subject') <p class="text-red-500 text-xs font-bold mt-1 ml-1">{{ $message }}</p> @enderror
+                </div>
+
+                <!-- File Upload (File Tab) -->
+                <div x-show="activeTab === 'file'" class="space-y-2">
+                    <label for="file" class="text-sm font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('Upload Document or Video') }}</label>
+                    <div class="relative group">
+                        <input type="file" name="file" id="file" class="hidden" @change="fileName = $event.target.files[0].name" x-data="{ fileName: '' }">
+                        <label for="file" class="flex flex-col items-center justify-center w-full min-h-[200px] bg-gray-50 border-2 border-dashed border-gray-200 hover:border-blue-400 hover:bg-blue-50 rounded-[2rem] cursor-pointer transition-all">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 group-hover:text-blue-500 mb-4"></i>
+                                <p class="mb-2 text-sm text-gray-500 font-bold" x-text="fileName || '{{ __('Click to upload or drag and drop') }}'"></p>
+                                <p class="text-xs text-gray-400 font-medium">{{ __('PDF, Word, ODT, or Video (max 20MB)') }}</p>
+                            </div>
+                        </label>
+                    </div>
+                    @error('file') <p class="text-red-500 text-xs font-bold mt-1 ml-1">{{ $message }}</p> @enderror
                 </div>
 
                 <!-- Submit -->
