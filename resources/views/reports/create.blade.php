@@ -15,7 +15,7 @@
         </div>
 
         <!-- Form Card -->
-        <div x-data="{ activeTab: 'text' }" class="bg-white rounded-[2.5rem] shadow-xl shadow-blue-900/5 border border-gray-100 overflow-hidden">
+        <div x-data="{ activeTab: '{{ $errors->has('file') ? 'file' : 'text' }}' }" class="bg-white rounded-[2.5rem] shadow-xl shadow-blue-900/5 border border-gray-100 overflow-hidden">
             <form action="{{ route('reports.store') }}" method="POST" enctype="multipart/form-data" class="p-8 md:p-12 space-y-8">
                 @csrf
 
@@ -76,8 +76,8 @@
                 <!-- File Upload (File Tab) -->
                 <div x-show="activeTab === 'file'" class="space-y-2">
                     <label for="file" class="text-sm font-black uppercase tracking-widest text-gray-400 ml-1">{{ __('Upload Document or Video') }}</label>
-                    <div class="relative group">
-                        <input type="file" name="file" id="file" class="hidden" @change="fileName = $event.target.files[0].name" x-data="{ fileName: '' }">
+                    <div class="relative group" x-data="{ fileName: '' }">
+                        <input type="file" name="file" id="file" class="hidden" @change="fileName = $event.target.files[0] ? $event.target.files[0].name : ''">
                         <label for="file" class="flex flex-col items-center justify-center w-full min-h-[200px] bg-gray-50 border-2 border-dashed border-gray-200 hover:border-blue-400 hover:bg-blue-50 rounded-[2rem] cursor-pointer transition-all">
                             <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                 <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 group-hover:text-blue-500 mb-4"></i>

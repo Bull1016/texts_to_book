@@ -61,12 +61,12 @@ class ReportService
             $videoPath = null;
 
             if ($report->file_path) {
-                $isImageOrVideo = str_starts_with(\Illuminate\Support\Facades\Storage::disk('public')->mimeType($report->file_path), 'video/');
+                $isImageOrVideo = str_starts_with(\Illuminate\Support\Facades\Storage::disk('local')->mimeType($report->file_path), 'video/');
 
                 if ($isImageOrVideo) {
-                    $videoPath = 'public/' . $report->file_path; // Storage::path expects relative to disk root if not specified, but here we use public disk
+                    $videoPath = $report->file_path;
                 } else {
-                    $extractedText = $this->fileService->extractText('public/' . $report->file_path, $report->file_type);
+                    $extractedText = $this->fileService->extractText($report->file_path, $report->file_type);
                     if ($extractedText) {
                         $combinedSubject .= "\n\n--- Extracted from file ---\n\n" . $extractedText;
                     }

@@ -32,7 +32,7 @@ class StoreReportRequest extends FormRequest
     protected function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            if (empty($this->subject) && !$this->hasFile('file')) {
+            if (empty(trim($this->subject ?? '')) && !$this->hasFile('file')) {
                 $validator->errors()->add('subject', __('Please provide either a subject description or upload a file.'));
             }
         });

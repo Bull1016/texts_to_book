@@ -11,12 +11,12 @@ class FileService
 {
     public function extractText(string $path, ?string $type = null): string
     {
-        if (!Storage::exists($path)) {
+        if (!Storage::disk('local')->exists($path)) {
             Log::error("File not found at path: {$path}");
             return "";
         }
 
-        $fullPath = Storage::path($path);
+        $fullPath = Storage::disk('local')->path($path);
         $extension = $type ?? pathinfo($fullPath, PATHINFO_EXTENSION);
 
         return match (strtolower($extension)) {

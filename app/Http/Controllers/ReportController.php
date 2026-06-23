@@ -43,8 +43,21 @@ class ReportController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $filePath = $file->store('uploads', 'public');
-            $fileType = $file->getClientOriginalExtension();
+            $filePath = $file->store('uploads', 'local');
+            // Use server-detected MIME type instead of client-provided extension
+            $mimeType = $file->getMimeType();
+            $fileType = match($mimeType) {
+                'application/pdf' => 'pdf',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
+                'application/msword' => 'doc',
+                'application/vnd.oasis.opendocument.text' => 'odt',
+                'video/mp4' => 'mp4',
+                'video/quicktime' => 'mov',
+                'video/x-msvideo' => 'avi',
+                'video/x-ms-wmv' => 'wmv',
+                'video/webm' => 'webm',
+                default => $file->getClientOriginalExtension(), // Fallback
+            };
         }
 
         $report = Report::create([

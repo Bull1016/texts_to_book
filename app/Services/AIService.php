@@ -68,13 +68,13 @@ class AIService
 
         $parts = [['text' => $prompt]];
 
-        if ($filePath && \Illuminate\Support\Facades\Storage::exists($filePath)) {
-            $mimeType = \Illuminate\Support\Facades\Storage::mimeType($filePath);
+        if ($filePath && \Illuminate\Support\Facades\Storage::disk('local')->exists($filePath)) {
+            $mimeType = \Illuminate\Support\Facades\Storage::disk('local')->mimeType($filePath);
             if (str_starts_with($mimeType, 'video/')) {
                 $parts[] = [
                     'inlineData' => [
                         'mimeType' => $mimeType,
-                        'data' => base64_encode(\Illuminate\Support\Facades\Storage::get($filePath))
+                        'data' => base64_encode(\Illuminate\Support\Facades\Storage::disk('local')->get($filePath))
                     ]
                 ];
             }
