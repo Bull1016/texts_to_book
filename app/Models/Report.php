@@ -13,6 +13,8 @@ class Report extends Model
         'title',
         'cover_image_url',
         'subject',
+        'file_path',
+        'file_type',
         'language',
         'outline',
         'status',

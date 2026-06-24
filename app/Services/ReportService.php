@@ -11,13 +11,16 @@ class ReportService
 {
     private AIService $aiService;
     private ImageService $imageService;
+    private FileService $fileService;
 
     public function __construct(
         AIService $aiService,
-        ImageService $imageService
+        ImageService $imageService,
+        FileService $fileService
     ) {
         $this->aiService = $aiService;
         $this->imageService = $imageService;
+        $this->fileService = $fileService;
     }
 
     private function createPrefaceSections(Report $report, array $analysisResult): void
@@ -53,9 +56,31 @@ class ReportService
                 'current_step' => __('Analyse du sujet et création du plan...')
             ]);
 
+            // Étape 0 : Extraction de texte si fichier (hors vidéo)
+            $combinedSubject = $report->subject;
+            $videoPath = null;
+
+            if ($report->file_path) {
+                $isImageOrVideo = str_starts_with(\Illuminate\Support\Facades\Storage::disk('local')->mimeType($report->file_path), 'video/');
+
+                if ($isImageOrVideo) {
+                    $videoPath = $report->file_path;
+                } else {
+                    $extractedText = $this->fileService->extractText($report->file_path, $report->file_type);
+                    if ($extractedText) {
+                        $combinedSubject .= "\n\n--- Extracted from file ---\n\n" . $extractedText;
+                    }
+                }
+            }
+
             // Étape 1 : Analyse et Plan détaillé
             Log::info("Generating analysis and outline for report {$report->id}");
-            $analysisResult = $this->aiService->generateAnalysis($report->title, $report->subject, $report->language ?? 'fr');
+            $analysisResult = $this->aiService->generateAnalysis(
+                $report->title,
+                $combinedSubject,
+                $report->language ?? 'fr',
+                $videoPath
+            );
 
             $report->update([
                 'outline' => $analysisResult['chapters'],
